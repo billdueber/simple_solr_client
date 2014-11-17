@@ -89,10 +89,6 @@ module SimpleSolr
         @name = nil
       end
 
-      def hello
-        "Hello"
-      end
-
       def stored?
         @stored
       end
