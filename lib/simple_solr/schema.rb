@@ -17,43 +17,65 @@ module SimpleSolr
 
     end
 
-    attr_reader :fields, :field_types, :copy_fields
+    attr_reader :fields, :dfields, :field_types, :copy_fields
 
-    def initialize
-      @fields      = {}
-      @copy_fields = []
-      @field_types = {}
-
+    def initialize(core)
+      @core = core
+      @fields = {}
+      @dfields = {}
+      @copy_fields = Hash.new {|h,k| h[k] = []}
+      self.load
     end
 
-    def explicit_fields
-      @fields.values.find_all {|x| x.explicit?}
-    end
-
-    def dynamic_fields
-      @fields.values.find_all {|x| x.dynamic?}
-    end
-
-    def add_field(f, in_default_schema = false)
+    def add_field(f)
       @fields[f.name] = f
-      f.in_default_schema = true if in_default_schema
     end
 
-    def add_field_type(fd, in_default_schema = false)
-      @field_types[fd.name] = fd
+    def add_dynamic_field(f)
+      @dfields[f.name] = f
+    end
+
+    def add_copy_field(f)
+      cf = @copy_fields[f.source]
+      cf << f
     end
 
 
-    def _add_explicit_fields_from_solr_resp(resp_from_schema_fields)
-      resp_from_schema_fields['fields'].each { |fh| add_field(Field.new_from_hash(fh), :in_default_schema) }
+    def load
+      load_explicit_fields
+      load_dynamic_fields
+      load_copy_fields
     end
 
-    def _add_dynamic_fields_from_solr_resp(resp_from_schema_dynamicfields)
-      resp_from_schema_dynamicfields['dynamicFields'].each { |fh| add_field(Field.new_from_hash(fh, :dynamic), :in_default_schema) }
+
+    def load_explicit_fields
+      @fields = {}
+      @core.get('schema/fields')['fields'].each do |field_hash|
+        add_field(Field.new_from_hash(field_hash))
+      end
     end
 
-    def _add_copy_fields_from_solr_resp(resp_from_schema_copyfields)
-      resp_from_schema_copyfields['copyFields'].each {|h| @copy_fields << CopyField.new(h['source'], h['dest'])}
+    def load_dynamic_fields
+      @dfields = {}
+      @core.get('schema/dynamicfields')['dynamicFields'].each do |field_hash|
+        f = DynamicField.new_from_hash(field_hash)
+        if @dfields[f.name]
+          raise "Dynamic field '#{f.name}' defined more than once"
+        end
+        add_dynamic_field(f)
+      end
+    end
+
+    def load_copy_fields
+      @copy_fields = Hash.new {|h,k| h[k] = []}
+      @core.get('schema/copyfields')['copyFields'].each do |cfield_hash|
+        add_copy_field(CopyField.new(cfield_hash['source'], cfield_hash['dest']))
+      end
+    end
+
+
+    def save
+
     end
 
 
@@ -89,10 +111,11 @@ module SimpleSolr
     class Field < Field_or_Type
       include Matcher
 
-      attr_accessor :type_name, :dynamic, :copy_to,
+      attr_accessor :type_name, :copy_to, :dynamic
 
       def initialize(name = nil)
         super
+        @dynamic = false
         @copy_to = []
       end
 
@@ -101,7 +124,7 @@ module SimpleSolr
         @matcher = derive_matcher(n)
       end
 
-      def self.new_from_hash(h, dynamic = false)
+      def self.new_from_hash(h)
         f                   = self.new
         f.name              = h['name']
         f.type_name         = h['type']
@@ -109,7 +132,6 @@ module SimpleSolr
         f.indexed           = h['indexed']
         f.multi             = h['multiValued']
         f.sort_missing_last = h['sortMissingLast']
-        f.dynamic           = dynamic
         f
       end
 
@@ -117,12 +139,17 @@ module SimpleSolr
         dynamic
       end
 
-      def explicit?
-        !dynamic
-      end
-
-
     end
+
+
+    class DynamicField < Field
+      def initialize(name = nil)
+        super
+        @dynamic = true
+      end
+    end
+
+
 
     # A basic field type
     #

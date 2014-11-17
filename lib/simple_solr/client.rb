@@ -109,6 +109,14 @@ module SimpleSolr
       dest
     end
 
+    # Unload all cores whose length is 36 characters (which we're
+    # assuming is a temp_core gid)
+    def unload_temp_cores
+      cores.each do |k|
+        core(k).unload if k.size == 36
+      end
+    end
+
   end
 
 
@@ -155,11 +163,7 @@ module SimpleSolr
     end
 
     def schema
-      @schema = SimpleSolr::Schema.new
-      @schema._add_explicit_fields_from_solr_resp get('schema/fields')
-      @schema._add_dynamic_fields_from_solr_resp  get('schema/dynamicfields')
-      @schema._add_copy_fields_from_solr_resp     get('schema/copyfields')
-      @schema
+      @schema ||= SimpleSolr::Schema.new(self)
     end
 
     def url(*args)
@@ -191,6 +195,8 @@ module SimpleSolr
       dirty!
       @client
     end
+
+
 
   end
 
