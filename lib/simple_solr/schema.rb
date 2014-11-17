@@ -139,6 +139,7 @@ module SimpleSolr
 
 
     class DynamicField < Field
+
       def initialize(name = nil)
         super
         @dynamic = true

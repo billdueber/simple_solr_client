@@ -184,6 +184,7 @@ module SimpleSolr
     # Reload this core, reading in the schema, solrconifg, etc. again
     def reload
       update({:commit => {}})
+      schema.save
       dirty!
       self
     end
