@@ -1,0 +1,18 @@
+<!-- attr fields -->
+<field name="_root_" type="string" indexed="true" stored="false"/>
+
+
+
+        <!-- We only have a handful of fields that we really want to be
+             single-valued, so just deal with them here -->
+<field name="id" type="string" indexed="true" stored="true"/>
+
+<field name="ht_json" type="string" indexed="false" stored="true"/>
+<field name="ht_count" type="int" indexed="true" stored="true"/>
+
+<field name="pub_date" type="int" indexed="true" stored="true"/>
+
+<field name="title_display" type="string" indexed="false" stored="true"/>
+
+<field name="title_sort" type="exactish" indexed="true" stored="false" sortMissingLast="true"/>
+<field name="author_sort" type="exactish" indexed="true" stored="true" sortMissingLast="true"/>

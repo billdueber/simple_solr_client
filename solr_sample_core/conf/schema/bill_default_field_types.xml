@@ -1,0 +1,210 @@
+
+<!--   .............................................................
+       :    Pipe delimited path/hierarcy, for multi-level facets    :
+       ..............................................................     -->
+
+<fieldType name="piped_path" class="solr.TextField">
+    <analyzer type="index">
+        <tokenizer class="solr.PathHierarchyTokenizerFactory" delimiter="|"/>
+    </analyzer>
+    <analyzer type="query">
+        <tokenizer class="solr.KeywordTokenizerFactory"/>
+    </analyzer>
+</fieldType>
+
+
+        <!--    ............................
+                :     Text types           :
+                ............................-->
+
+
+        <!-- text - A standard text type, with icu tokenization and unicode normalization.
+             We start with a MappingCharFilter to turn common tokens that might get mis-tokenized
+             into something easier for the rest of the chain to deal with (e.g., C++,
+
+
+               - With the ICUFolding, we get:
+                 + NFKC normalization (precomosing),
+                 + Unicode case folding (i.e., lowercasing)
+                 + search term folding (removing accents, etc).
+               - Synonyms can be put in &synonym_file; (see sample synonyms.txt file in solr example)
+               - The CJK stuff produces bigrams for those languages
+               - The KeywordRepeat, Porter, and RemoveDups filters essentially allow stemming
+                 while preserving the idea that the unstemmed word is "worth more" than a stemmed version.
+                 Note that this is basically just because you get a match on one more token,
+                 so you might want to have an explicit text_proper field.
+        -->
+<fieldType name="text" class="solr.TextField" positionIncrementGap="&tpig;">
+<analyzer>
+    <charFilter class="solr.ICUNormalizer2CharFilterFactory"/>
+    <charFilter class="solr.MappingCharFilterFactory" mapping="&char_expansion_file;"/>
+    <tokenizer class="solr.ICUTokenizerFactory"/>
+    <filter class="solr.ICUFoldingFilterFactory"/>
+    <filter class="solr.SynonymFilterFactory" synonyms="&synonym_file;" ignoreCase="true" expand="false"/>
+    <filter class="solr.CJKWidthFilterFactory"/>
+    <filter class="solr.CJKBigramFilterFactory"/>
+    <filter class="solr.KeywordRepeatFilterFactory"/>
+    <filter class="&stemmer;"/>
+    <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+</analyzer>
+</fieldType>
+
+        <!-- text_proper - A text field without stemming. -->
+<fieldType name="text_proper" class="solr.TextField" positionIncrementGap="&tpig;">
+<analyzer>
+    <charFilter class="solr.ICUNormalizer2CharFilterFactory"/>
+    <charFilter class="solr.MappingCharFilterFactory" mapping="&char_expansion_file;"/>
+    <tokenizer class="solr.ICUTokenizerFactory"/>
+    <filter class="solr.ICUFoldingFilterFactory"/>
+    <filter class="solr.CJKWidthFilterFactory"/>
+    <filter class="solr.CJKBigramFilterFactory"/>
+    <filter class="solr.SynonymFilterFactory" synonyms="&synonym_file;" ignoreCase="true" expand="false"/>
+
+</analyzer>
+</fieldType>
+
+        <!-- text_l - A left-anchored text type, that only matches if it the query matches
+             the indexed value starting at the left hand side.
+
+             For this one, we have to use the whitespace tokenizer because ICU tokenizer will
+             split on character codepoint changes, and there isn't a character we can use for
+             the prefix (here, 'AAAA' that wouldn't result in a codepoint change and thus mess
+             up mm settings (see )
+
+             Note that this means that fields of type text_l will potentially have a different
+             number of tokens than those of type text, so you should probably (once again) only
+             use this with phrase searches.
+
+        -->
+
+<fieldType name="text_l" class="solr.TextField" positionIncrementGap="&tpig;">
+<analyzer>
+
+    <!-- Normalize text -->
+      <charFilter class="solr.ICUNormalizer2CharFilterFactory"/>
+
+    <!-- Common replacements at the char level (e.g., c# -> csharp) -->
+    <charFilter class="solr.MappingCharFilterFactory" mapping="&char_expansion_file;"/>
+
+    <!-- Eliminate leading and trailing punctuation and add on a prefix -->
+    <charFilter class="solr.PatternReplaceCharFilterFactory"
+                pattern="^\p{Punct}*(.*?)\p{Punct}*$" replacement="aaaaa$1" />
+    <tokenizer class="solr.ICUTokenizerFactory"/>
+    <filter class="solr.SynonymFilterFactory" synonyms="&synonym_file;" ignoreCase="true" expand="false"/>
+    <filter class="solr.CJKWidthFilterFactory"/>
+    <filter class="solr.CJKBigramFilterFactory"/>
+    <filter class="solr.KeywordRepeatFilterFactory"/>
+    <filter class="&stemmer;"/>
+    <filter class="solr.RemoveDuplicatesTokenFilterFactory"/>
+</analyzer>
+</fieldType>
+
+
+
+        <!-- exactish - a text type that only matches on the whole string, but with
+             case folding, removal of punctuation, etc.
+
+             This is a more gentle replacement for a String field, which is a bit too
+             extreme in its definition of matching for things like titles
+
+             For general use, this works only if you put in the whole search string
+             as a phrase.
+
+             However, it's probably a pretty good sort key as well
+        -->
+
+<fieldType name="exactish" class="solr.TextField" positionIncrementGap="&tpig;">
+<analyzer>
+      <charFilter class="solr.ICUNormalizer2CharFilterFactory"/>
+    <charFilter class="solr.MappingCharFilterFactory" mapping="&char_expansion_file;"/>
+
+    <tokenizer class="solr.KeywordTokenizerFactory"/>
+    <filter class="solr.TrimFilterFactory"/>
+
+    <!-- Anything punctuation that should be turned into a space (probably just - and :) needs
+         to do so here -->
+    <filter class="solr.PatternReplaceFilterFactory"
+            pattern="([:\-])" replacement=" " replace="all"
+            />
+    <filter class="solr.PatternReplaceFilterFactory"
+            pattern="([\p{Punct}])" replacement="" replace="all"
+            />
+    <filter class="solr.ICUFoldingFilterFactory"/>
+    <filter class="solr.CJKWidthFilterFactory"/>
+    <filter class="solr.CJKBigramFilterFactory"/>
+
+</analyzer>
+</fieldType>
+
+
+        <!--  ..............................
+              :     Custom numeric types   :
+              ..............................-->
+
+
+
+        <!-- numericID (for OCLC/ISBN/ISSN,ID,etc.)
+                - trim off any whitespace
+                - take the first string of digits/dashes/dots and an optional X or x
+                  that is at least six characters long (OCLC, ISBN, ISSN, etc.)
+                  and throw away everything that's left
+                - lowercase it (i.e., turn any trailing X into an x)
+                - ditch everything that's not a number or an 'x'
+                - Give up if it's not at least 8 characters long or more than 14 characters long
+                - ditch any leading zeros (which others may or may not want)
+         -->
+
+
+
+<fieldtype name="numericID" class="solr.TextField" positionIncrementGap="1000" omitNorms="true">
+<analyzer>
+    <tokenizer class="solr.KeywordTokenizerFactory"/>
+    <filter class="solr.TrimFilterFactory" />
+    <filter class="solr.PatternReplaceFilterFactory" pattern="^.*?(\p{N}[\p{N}\-\.]{&mnl_minus_two;,}[xX]?).*$" replacement="***$1"/>
+    <filter class="solr.PatternReplaceFilterFactory" pattern="^[^\*].*$" replacement=""/>
+    <filter class="solr.PatternReplaceFilterFactory" pattern="^\*\*\*" replacement=""/>
+    <filter class="solr.LowerCaseFilterFactory"/>
+    <filter class="solr.PatternReplaceFilterFactory" pattern="[^\p{N}x]" replacement="" replace="all"/>
+    <filter class="solr.LengthFilterFactory" min="&min_num_length;" max="&max_num_length;"/>
+    <!--<filter class="solr.PatternReplaceFilterFactory" pattern="^0*" replacement=""/>-->
+</analyzer>
+</fieldtype>
+
+
+
+
+
+
+        <!-- This is an example of using the KeywordTokenizer along
+             With various TokenFilterFactories to produce a sortable field
+             that does not include some properties of the source text
+          -->
+<fieldType name="alphaOnlySort" class="solr.TextField" sortMissingLast="true" omitNorms="true">
+<analyzer>
+    <!-- KeywordTokenizer does no actual tokenizing, so the entire
+         input string is preserved as a single token
+      -->
+    <tokenizer class="solr.KeywordTokenizerFactory"/>
+    <!-- The LowerCase TokenFilter does what you expect, which can be
+         when you want your sorting to be case insensitive
+      -->
+    <filter class="solr.LowerCaseFilterFactory"/>
+    <!-- The TrimFilter removes any leading or trailing whitespace -->
+    <filter class="solr.TrimFilterFactory"/>
+    <!-- The PatternReplaceFilter gives you the flexibility to use
+         Java Regular expression to replace any sequence of characters
+         matching a pattern with an arbitrary replacement string,
+         which may include back references to portions of the original
+         string matched by the pattern.
+
+         See the Java Regular Expression documentation for more
+         information on pattern and replacement string syntax.
+
+         http://docs.oracle.com/javase/7/docs/api/java/util/regex/package-summary.html
+      -->
+    <filter class="solr.PatternReplaceFilterFactory"
+            pattern="([^a-z])" replacement="" replace="all"
+            />
+</analyzer>
+</fieldType>
+

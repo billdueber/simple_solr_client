@@ -1,0 +1,158 @@
+<!-- Some basic dynamic fields.
+
+The dynamic fields that end in _[X]_s will result in a stored, unindexed string field being
+created, along with an appropriate indexed (but unstored) analyzed field.
+
+The stored field will have the same name as the prefix of the sent field, with an additional
+'z' added on (as if it were a misspelled plural) for multivalued fields.
+
+Examples:
+  fullmarc => fullmarc (stored string), nothing indexed
+  subject_es_s => subject_e (indexed), subject (stored)
+  title_t_s => title_t (indexed), titlez (stored)
+
+  pubyear_is_s => pubyear_i (indexed), pubyear (stored)
+
+  page_i_s => page_i (indexed), pagez (stored)
+
+
+
+The stored field naming convention can help to remember which fields are multivalued and which are not.
+Alternately, your solr client could be set to do something on missing fields, e.g. (Ruby)
+
+   def [](key)
+     return self.doc[key] if self.doc.has_key?(key)
+     return self.doc[key + 'z'] if self.doc.hash_key?(key + 'z')
+
+     # If we asked for a multi-valued field, return an empty array. Otherwise,
+     # nil
+     if key =~ /z\Z/
+       []
+     else
+       nil
+     end
+   end
+
+
+-->
+
+<!-- NOTE ABOUT "Recursive" copyFields:
+  copyField only takes on "hop":  a copyField cannot trigger another copyField.
+
+  You'd think for, e.g., *_st_s, I could just copy to *_t_s and add one more stored
+  field, but you'd be wrong. I don't know exactly why it doesn't work, but it doesn't,
+  and we're left with this "only assume one hop" nonsense.
+
+-->
+
+<!-- A text field that is indexed (under <name>_t) and stored (under <name> or <name>z)    -->
+
+<dynamicField name="*_t_s" type="ignored" indexed="false" stored="false" multiValued="true"/>
+<copyField source="*_t_s" dest="*_t"/>
+<copyField source="*_t_s" dest="*"/>
+
+<!-- a text field with an additional indexed copy in a string (for faceting) -->
+<dynamicField name="*_st_s" type="ignored" indexed="false" stored="false" multiValued="true"/>
+<copyField source="*_st_s" dest="*_t"/>
+<copyField source="*_st_s" dest="*_s"/>
+<copyField source="*_st_s" dest="*"/>
+
+
+<!-- A text field, but with an additional left-anchored search (text_l) -->
+<dynamicField name="*_tl_s" type="ignored" indexed="false" stored="false" multiValued="true"/>
+<copyField source="*_tl_s" dest="*_tl"/>
+<copyField source="*_tl_s" dest="*_t"/>
+<copyField source="*_tl_s" dest="*"/>
+
+<!-- A text field, but with an additional *_tp as text proper -->
+<dynamicField name="*_tp_s" type="ignored" indexed="false" stored="false" multiValued="true"/>
+<copyField source="*_tp_s" dest="*_tp"/>
+<copyField source="*_tp_s" dest="*_t"/>
+<copyField source="*_tp_s" dest="*"/>
+
+
+<!-- A multi-valued text field with the works: _t, _tl, _tp, and stored string versions -->
+<dynamicField name="*_tmax_s" type="ignored" indexed="false" stored="false" multiValued="true"/>
+<copyField source="*_tmax_s" dest="*_tp"/>
+<copyField source="*_tmax_s" dest="*_tl"/>
+<copyField source="*_tmax_s" dest="*_t"/>
+<copyField source="*_tmax_s" dest="*"/>
+
+<!-- A multi-valued text with with the works, but unstored -->
+<dynamicField name="*_tmax" type="ignored" indexed="false" stored="false" multiValued="true"/>
+<copyField source="*_tmax" dest="*_tp"/>
+<copyField source="*_tmax" dest="*_tl"/>
+<copyField source="*_tmax" dest="*_t"/>
+
+
+
+<!-- An exactish field -->
+<dynamicField name="*_e_s" type="ignored" indexed="false" stored="false" multiValued="true"/>
+<copyField source="*_e_s" dest="*_e"/>
+<copyField source="*_e_s" dest="*"/>
+
+<!-- exaxctish field with a copy in a string (the former for searching, the latter for facets -->
+<dynamicField name="*_se_s" type="ignored" indexed="false" stored="false" multiValued="true"/>
+<copyField source="*_se_s" dest="*_e"/>
+<copyField source="*_se_s" dest="*_s"/>
+<copyField source="*_se_s" dest="*"/>
+
+<!-- Numeric ID -->
+<dynamicField name="*_n_s" type="ignored" indexed="false" stored="false" multiValued="true"/>
+<copyField source="*_n_s" dest="*_n"/>
+<copyField source="*_n_s" dest="*"/>
+
+
+<!-- Integer -->
+<dynamicField name="*_i_s" type="ignored" indexed="false" stored="false" multiValued="true"/>
+<copyField source="*_i_s" dest="*_i"/>
+<copyField source="*_i_s" dest="*"/>
+
+
+<!-- Un-analyzed string, indexed (as _s) and stored  -->
+<dynamicField name="*_s_s" type="ignored" indexed="false" stored="false" multiValued="true"/>
+<copyField source="*_s_s" dest="*_s"/>
+<copyField source="*_s_s" dest="*"/>
+
+<!-- Piped path -->
+<dynamicField name="*_pp_s" type="ignored" indexed="false" stored="false" multiValued="true"/>
+<copyField source="*_pp_s" dest="*_pp" />
+<copyField source="*_pp_s" dest="*_piped"/>
+
+
+    <!-- Our base types:
+        * _t (text)
+        * _tp (text proper;  no stemming)
+        * _tl (text; left justified)
+        * _e  (exactish)
+        * _es (exactish, single-valued)
+        * _nid  (numericID)
+        * _nids (numiercID, single-valued)
+        * _i (integer)
+        * _is (integer, single-valued)
+        * _s (string, completely un-analyzed)
+        * _ss (string, single-valued)
+        * _pp (piped_path, pipe-delimited path/hierarchy for facets)
+
+    -->
+
+<dynamicField name="*_t"  type="text"        indexed="true" stored="false" multiValued="true"/>
+<dynamicField name="*_tp" type="text_proper" indexed="true" stored="false" multiValued="true"/>
+<dynamicField name="*_tl" type="text_l"      indexed="true" stored="false" multiValued="true"/>
+
+<dynamicField name="*_e"  type="exactish"    indexed="true" stored="false" multiValued="true" sortMissingLast="true"/>
+
+<dynamicField name="*_n"  type="numericID"   indexed="true" stored="false" multiValued="true"/>
+
+<dynamicField name="*_i"  type="int"         indexed="true" stored="false" multiValued="true"/>
+
+<dynamicField name="*_s"  type="string"      indexed="true" stored="false" multiValued="true" sortMissingLast="true"/>
+
+<dynamicField name="*_pp" type="piped_path"  indexed="true" stored="false" multiValued="true"/>
+
+<dynamicField name="*_piped"   type="string" indexed="true" stored="true" multiValued="true"/>
+
+<dynamicField name="*_bool" type="boolean"   indexed="true"  stored="true" multiValued="false"/>
+
+<dynamicField name="*"    type="string"      indexed="false" stored="true" multiValued="true"/>
+
