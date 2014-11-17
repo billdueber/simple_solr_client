@@ -82,9 +82,8 @@ module SimpleSolr
 
     # Create a new, temporary core
     #noinspection RubyWrongHash
-    def temp_core
-      dir      = temp_core_dir_setup
-      corename = SecureRandom.uuid
+    def new_core(corename)
+      dir      = temp_core_dir_setup(corename)
 
       args = {
           :wt          => 'json',
@@ -98,9 +97,13 @@ module SimpleSolr
 
     end
 
+    def temp_core
+      new_core(SecureRandom.uuid)
+    end
+
     # Set up files for a temp core
-    def temp_core_dir_setup
-      dest = Dir.mktmpdir('simple_solr')
+    def temp_core_dir_setup(corename)
+      dest = Dir.mktmpdir("simple_solr_#{corename}")
       src  = SAMPLE_CORE_DIR
       FileUtils.cp_r File.join(src, '.'), dest
       dest

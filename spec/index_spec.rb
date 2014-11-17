@@ -3,10 +3,10 @@ require 'minitest_helper'
 describe "Basic indexing/" do
 
   before do
-    @client = TestClient.instance.client
-    @core = @client.core('core1')
+    @core = TempCore.instance.core
     @core.clear
   end
+
 
   it "clears" do
     @core.number_of_documents.must_equal 0

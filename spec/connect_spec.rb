@@ -3,8 +3,8 @@ require 'minitest_helper'
 describe "Basic connection to a running solr" do
 
   before do
-    @client = TestClient.instance.client
-    @core = @client.core('core1')
+    @core = TempCore.instance.core
+    @client = @core.client
   end
 
 
@@ -13,7 +13,7 @@ describe "Basic connection to a running solr" do
   end
 
   it "gets an OK response from cores" do
-    @client._get('admin/cores')['status'].keys.must_include "core1"
+    @client._get('admin/cores')['status'].keys.must_include @core.name
   end
 
   it "gets a ping" do
