@@ -74,8 +74,13 @@ module SimpleSolr
     end
 
 
-    def save
+    def write
 
+    end
+
+    def reload
+      write
+      @core.reload
     end
 
 
