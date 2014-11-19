@@ -4,7 +4,7 @@ describe "Basic connection to a running solr" do
 
   before do
     @core = TempCore.instance.core
-    @client = @core.client
+    @client = TempCore.instance.client
   end
 
 

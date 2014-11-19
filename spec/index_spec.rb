@@ -13,13 +13,13 @@ describe "Basic indexing/" do
   end
 
   it "adds" do
-    @core.add({:id=>1, :name=>"Bill"}).commit
+    @core.add_docs({:id=>1, :name=>"Bill"}).commit
     @core.number_of_documents.must_equal 1
   end
 
   it "deletes by query" do
-    @core.add({:id=>1, :name_s=>"Bill"})
-    @core.add({:id=>2, :name_s=>"Mike"})
+    @core.add_docs({:id=>1, :name_s=>"Bill"})
+    @core.add_docs({:id=>2, :name_s=>"Mike"})
     @core.commit
     @core.number_of_documents.must_equal 2
     @core.delete('name_s:Mike').commit

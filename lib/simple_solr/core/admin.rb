@@ -37,10 +37,9 @@ module SimpleSolr::Core::Admin
   end
 
   # Unload the current core and delete all its files
-  # @return The (non-core-specific) SimpleSolr::Client
+  # @return The Solr response
   def unload
-    @client.get('admin/cores', {:wt => 'json', :core => core, :action => 'UNLOAD', :deleteInstanceDir => true})
-    @client
+    get('admin/cores', {:force_top_level_url => true, :core => core, :action => 'UNLOAD', :deleteInstanceDir => true})
   end
 
 
