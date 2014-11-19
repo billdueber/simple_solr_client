@@ -12,7 +12,7 @@ module SimpleSolr
     end
 
     def default?
-      index['isDefaultCore']
+      @raw_solr_hash['isDefaultCore']
     end
 
     def last_modified
@@ -21,6 +21,22 @@ module SimpleSolr
 
     def number_of_documents
       index['numDocs']
+    end
+
+    def data_dir
+      @raw_solr_hash['dataDir']
+    end
+
+    def instance_dir
+      @raw_solr_hash['instanceDir']
+    end
+
+    def config_file
+      File.join(instance_dir, 'conf', @raw_solr_hash['config'])
+    end
+
+    def schema_file
+      File.join(instance_dir, 'conf', @raw_solr_hash['schema'])
     end
 
   end

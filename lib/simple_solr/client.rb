@@ -52,14 +52,14 @@ module SimpleSolr
     end
 
     # Get from solr, and return a Response object of some sort
-    def get(path, args = {}, response_type = nil)
-      response_type = SimpleSolr::Response::GenericResponse if response_type.nil?
+    # @return [SimpleSolr::Response, response_type]
+    def get(path, args = {}, response_type = SimpleSolr::Response::GenericResponse)
       response_type.new(_get(path, args))
     end
 
     # Post an object as JSON and return a Response object
-    def post_json(path, object_to_post, response_type = nil)
-      response_type = SimpleSolr::Response::GenericResponse if response_type.nil?
+    # @return [SimpleSolr::Response, response_type]
+    def post_json(path, object_to_post, response_type = SimpleSolr::Response::GenericResponse)
       response_type.new(_post_json(path, object_to_post))
     end
 
@@ -130,7 +130,7 @@ module SimpleSolr
     attr_accessor :core, :client
     alias_method :name, :core
 
-    CORE_DATA_METHODS = [:index, :default?, :last_modified, :number_of_documents]
+    CORE_DATA_METHODS = [:index, :default?, :last_modified, :number_of_documents, :schema_file, :config_file]
     SCHEMA_METHODS = [:add_field, :add_field_type]
 
     CORE_DATA_METHODS.each do |m|
@@ -179,22 +179,6 @@ module SimpleSolr
     # Get the core data for this core
     def core_data
       @core_data ||= CoreData.new @client.core_data(core)
-    end
-
-    # Reload this core, reading in the schema, solrconifg, etc. again
-    def reload
-      update({:commit => {}})
-      schema.save
-      dirty!
-      self
-    end
-
-    # Unload the current core and delete all its files
-    # @return The (non-core-specific) SimpleSolr::Client
-    def unload
-      @client.get('admin/cores', {:wt => 'json', :core => core, :action => 'UNLOAD', :deleteInstanceDir => true})
-      dirty!
-      @client
     end
 
 
