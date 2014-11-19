@@ -46,7 +46,7 @@ class SimpleSolr::Response::QueryResponse < SimpleSolr::Response::GenericRespons
 
 
   def each_with_rank
-    return self.enum_for(:each_with_index) unless block_given?
+    return self.enum_for(:each_with_rank) unless block_given?
     @docs.each { |x| yield x, x.rank }
   end
 
