@@ -111,7 +111,7 @@ module SimpleSolr
     end
 
     def temp_core
-      new_core(SecureRandom.uuid)
+      new_core('sstemp_' + SecureRandom.uuid)
     end
 
     # Set up files for a temp core
@@ -122,11 +122,10 @@ module SimpleSolr
       dest
     end
 
-    # Unload all cores whose length is 36 characters (which we're
-    # assuming is a temp_core gid)
+    # Unload all cores whose name includes 'sstemp'
     def unload_temp_cores
       cores.each do |k|
-        core(k).unload if k.size == 36
+        core(k).unload if k =~ /sstemp/
       end
     end
 
