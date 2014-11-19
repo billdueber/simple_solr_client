@@ -1,10 +1,8 @@
 require 'httpclient'
 require 'simple_solr/response/generic_response'
-require 'simple_solr/schema'
-require 'simple_solr/core_data'
-require 'forwardable'
-require 'delegate'
 require 'securerandom'
+
+require 'simple_solr/core'
 
 module SimpleSolr
 
@@ -17,6 +15,7 @@ module SimpleSolr
 
     def initialize(url)
       @base_url  = url.chomp('/')
+      @client_url = @base_url
       @rawclient = HTTPClient.new
     end
 
@@ -26,9 +25,24 @@ module SimpleSolr
       [@base_url, *args].join('/').chomp('/')
     end
 
+    # Sometimes, you just gotta have a top_level_url (as opposed to a
+    # core-level URL)
+    def top_level_url(*args)
+      [@client_url, *args].join('/').chomp('/')
+    end
+
+
     # Call a get on the underlying http client and return the content
+    # You can pass in :force_top_level=>true for those cases wehn
+    # you absolutely have to use the client-level url and not a
+    # core level URL
     def raw_get_content(path, args={})
-      @rawclient.get(url(path), args).content
+      if args.delete(:force_top_level_url)
+        u = top_level_url(path)
+      else
+        u = url(path)
+      end
+      @rawclient.get(u, args).content
     end
 
     # A basic get to the instance (not any specific core)
@@ -53,30 +67,29 @@ module SimpleSolr
 
     # Get from solr, and return a Response object of some sort
     # @return [SimpleSolr::Response, response_type]
-    def get(path, args = {}, response_type = SimpleSolr::Response::GenericResponse)
+    def get(path, args = {}, response_type = nil)
+      response_type = SimpleSolr::Response::GenericResponse if response_type.nil?
       response_type.new(_get(path, args))
     end
 
     # Post an object as JSON and return a Response object
     # @return [SimpleSolr::Response, response_type]
-    def post_json(path, object_to_post, response_type = SimpleSolr::Response::GenericResponse)
+    def post_json(path, object_to_post, response_type = nil)
+      response_type = SimpleSolr::Response::GenericResponse if response_type.nil?
       response_type.new(_post_json(path, object_to_post))
     end
 
 
     # Get a client specific to the given core2
+    # @param [String] corename The name of the core (which must already exist!)
+    # @return [SimpleSolr::Core]
     def core(corename)
       SimpleSolr::Core.new(@base_url, corename)
     end
 
-    # Get the core data for the currently installed cores
-    def core_data(corename)
-      cdata = get('admin/cores', {'wt' => 'json'})
-      cdata.status[corename]
-    end
 
     def cores
-      cdata = get('admin/cores', {'wt' => 'json'}).status.keys
+      cdata = get('admin/cores', {:force_top_level_url=>true}).status.keys
     end
 
 
@@ -118,72 +131,5 @@ module SimpleSolr
     end
 
   end
-
-
-  # Connect to / deal with a specific core
-
-  class Core < Client
-    require 'simple_solr/client/index'
-    include SimpleSolr::Core::Index
-    extend Forwardable
-
-    attr_accessor :core, :client
-    alias_method :name, :core
-
-    CORE_DATA_METHODS = [:index, :default?, :last_modified, :number_of_documents, :schema_file, :config_file]
-    SCHEMA_METHODS = [:add_field, :add_field_type]
-
-    CORE_DATA_METHODS.each do |m|
-      define_method(m) { core_data.send(m) }
-    end
-
-    SCHEMA_METHODS.each do |m|
-      define_method(m) do |f|
-        schema.send(m,f)
-        dirty!
-      end
-    end
-
-
-
-
-    def initialize(url, core)
-      super(url)
-      @core      = core
-      @client    = SimpleSolr::Client.new(url)
-    end
-
-    # Mark this core as "dirty", necessitating a reload of, e.g.,
-    # core data. Basically, let anything cached know it needs to be
-    # re-fetched
-    def dirty!
-      @core_data = nil
-      @schema = nil
-      self
-    end
-
-    def schema
-      @schema ||= SimpleSolr::Schema.new(self)
-    end
-
-    def url(*args)
-      [@base_url, @core, *args].join('/').chomp('/')
-    end
-
-    # Send JSON to this core's update/json handler
-    def update(object_to_post, response_type = nil)
-      post_json('update/json', object_to_post, response_type)
-    end
-
-
-    # Get the core data for this core
-    def core_data
-      @core_data ||= CoreData.new @client.core_data(core)
-    end
-
-
-
-  end
-
 
 end

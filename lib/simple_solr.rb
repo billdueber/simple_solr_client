@@ -8,7 +8,7 @@ module SimpleSolr
   # Is *not* called internally, since how as I supposed to know if the parens/quotes are a
   # part of your string or there for legal lucene grouping?
   #
-  def self.escape(str)
+  def self.lucene_escape(str)
     esc = str.to_s.gsub(ESCAPE_PAT, ESCAPE_MAP)
   end
 
@@ -33,5 +33,10 @@ end
 
 
 require "simple_solr/version"
+
+# Need to load core before client because of inter-dependencies resulting
+# in 'require' recursion
+
+require 'simple_solr/core'
 require 'simple_solr/client'
 
