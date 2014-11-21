@@ -27,12 +27,10 @@ module SimpleSolr::Core::Admin
     self
   end
 
-
-  # Reload this core, reading in the schema, solrconifg, etc. again
+  # Reload the core (for when you've changed the schema, solrconfig, synonyms, etc.)
   # @return self
   def reload
-    update({:commit => {}})
-    schema.save
+    get('admin/cores', {:force_top_level_url => true, :core => core, :action => 'RELOAD'})
     self
   end
 

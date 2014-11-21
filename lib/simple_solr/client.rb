@@ -42,7 +42,8 @@ module SimpleSolr
       else
         u = url(path)
       end
-      @rawclient.get(u, args).content
+      res = @rawclient.get(u, args)
+      res.content
     end
 
     # A basic get to the instance (not any specific core)
@@ -52,7 +53,11 @@ module SimpleSolr
     def _get(path, args={})
       path.sub! /\A\//, ''
       args['wt'] = 'json'
-      JSON.parse(raw_get_content(path, args))
+      res = JSON.parse(raw_get_content(path, args))
+      if res['error']
+        raise RuntimeError.new, res['error']
+      end
+      res
     end
 
     #  post JSON data.
