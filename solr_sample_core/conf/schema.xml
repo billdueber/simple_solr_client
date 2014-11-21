@@ -5,6 +5,7 @@
 
   <!-- The unique key -->
   <!-- It's gotta gotta gotta be a string!!! -->
+  <field name="id" type="string" indexed="true" stored="true" multiValued="false" />
   <uniqueKey>id</uniqueKey>
 
   <!-- =========================================

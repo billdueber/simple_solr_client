@@ -22,6 +22,9 @@ Gem::Specification.new do |spec|
   # Thread-safe, cross-platform http client
   spec.add_dependency "httpclient"
 
+  # XML parsing. Slower, but less screwy than Nokogiri
+  spec.add_dependency 'oga', '>=0.2.0'
+
   # Only require Oj for MRI/rbx. We'll use stock JSON on jruby
   if defined? JRUBY
     spec.platform = "java"
