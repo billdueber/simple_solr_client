@@ -59,12 +59,23 @@ class SimpleSolr::Schema
     @fields[f.name] = f
   end
 
+
+  def fieldTypes
+    @fieldTypes.values
+  end
+
+  def fieldType(k)
+    @fieldTypes[k]
+  end
+
   # When we add dynamic fields, we need to keep them sorted by
   # lenght of the key, since that's how they match
   def add_dynamic_field(f)
     raise "Dynamic field should be dynamic and have a '*' in it somewhere; '#{f.name}' does not" unless f.name =~ /\*/
     @dynamic_fields[f.name] = f
+
     @dynamic_fields         = @dynamic_fields.sort { |a, b| b[0].size <=> a[0].size }.to_h
+
   end
 
   def add_copy_field(f)
@@ -195,40 +206,6 @@ class SimpleSolr::Schema
                   :multi,
                   :sort_missing_last
 
-    def [](k)
-      self.send(k.to_sym)
-    end
-
-    def []=(k, v)
-      self.send("#{k}=".to_sym, v)
-    end
-
-    def to_h
-      h = {}
-      instance_variables.each do |iv|
-        h[iv.to_s.sub('@', '')] = instance_variable_get(iv)
-      end
-      h
-    end
-
-    def initialize(h={})
-      h.each_pair do |k, v|
-        begin
-          self[k] = v
-        rescue
-        end
-
-      end
-    end
-
-  end
-
-
-  class Field < Field_or_Type
-    include Matcher
-
-    attr_accessor :type_name
-    attr_reader :matcher
 
     TEXT_ATTR_MAP = {
         :name      => 'name',
@@ -242,19 +219,6 @@ class SimpleSolr::Schema
         :sort_missing_last => 'sortMissingLast'
     }
 
-    def initialize(*args)
-      super
-      @dynamic = false
-      @copy_to = []
-    end
-
-
-
-
-    def name=(n)
-      @name    = n
-      @matcher = derive_matcher(n)
-    end
 
     def ==(other)
       if other.respond_to? :name
@@ -281,6 +245,66 @@ class SimpleSolr::Schema
 
       f
     end
+
+    def [](k)
+      self.send(k.to_sym)
+    end
+
+    def []=(k, v)
+      self.send("#{k}=".to_sym, v)
+    end
+
+
+
+    def to_h
+      h = {}
+      instance_variables.each do |iv|
+        h[iv.to_s.sub('@', '')] = instance_variable_get(iv)
+      end
+      h
+    end
+
+    def initialize(h={})
+      h.each_pair do |k, v|
+        begin
+          self[k] = v
+        rescue
+        end
+
+      end
+    end
+
+
+    def stored?
+      stored
+    end
+
+  end
+
+
+  class Field < Field_or_Type
+    include Matcher
+
+    attr_accessor :type_name
+    attr_reader :matcher
+
+    def initialize(*args)
+      super
+      @dynamic = false
+      @copy_to = []
+    end
+
+
+    def stored?
+      defined? stored ? stored : type.stored?
+    end
+
+
+    def name=(n)
+      @name    = n
+      @matcher = derive_matcher(n)
+    end
+
 
     def to_oga_node
       e      = Oga::XML::Element.new
@@ -332,7 +356,7 @@ class SimpleSolr::Schema
     attr_accessor :xml, :class
 
     def initialize(*args)
-      super(name)
+      super
       @xml = nil
     end
   end
