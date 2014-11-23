@@ -1,4 +1,4 @@
-require 'oga'
+require 'nokogiri'
 
 class SimpleSolr::Schema
   # A simplistic representation of a schema
@@ -87,7 +87,9 @@ class SimpleSolr::Schema
   # For loading, we get the information about the fields via the API,
   # but grab an XML document for modifying/writing
   def load
-    @xmldoc = Oga.parse_xml(@core.raw_get_content('admin/file', {:file => 'schema.xml'}))
+    @xmldoc = Nokogiri.XML(@core.raw_get_content('admin/file', {:file => 'schema.xml'}))  do |config|
+      config.noent # allow parsing of external entitity definitions
+    end
     load_explicit_fields
     load_dynamic_fields
     load_copy_fields

@@ -23,7 +23,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency "httpclient"
 
   # XML parsing. Slower, but less screwy than Nokogiri
-  spec.add_dependency 'oga', '>=0.2.0'
+  spec.add_dependency 'nokogiri'
 
   # Only require Oj for MRI/rbx. We'll use stock JSON on jruby
   if defined? JRUBY
