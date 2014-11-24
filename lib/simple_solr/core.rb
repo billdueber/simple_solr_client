@@ -42,7 +42,7 @@ class SimpleSolr::Core
   end
 
   def schema
-    SimpleSolr::Schema.new(self)
+    @schema ||= SimpleSolr::Schema.new(self)
   end
 
 end

@@ -1,4 +1,5 @@
 require 'nokogiri'
+require 'pry'
 
 class SimpleSolr::Schema
   # A simplistic representation of a schema
@@ -22,11 +23,11 @@ class SimpleSolr::Schema
   attr_reader :xmldoc
 
   def initialize(core)
-    @core = core
-    @fields = {}
+    @core           = core
+    @fields         = {}
     @dynamic_fields = {}
-    @copy_fields = Hash.new { |h, k| h[k] = [] }
-    @field_types = {}
+    @copy_fields    = Hash.new { |h, k| h[k] = [] }
+    @field_types    = {}
     self.load
   end
 
@@ -93,7 +94,7 @@ class SimpleSolr::Schema
   # but grab an XML document for modifying/writing
   def load
     @xmldoc = Nokogiri.XML(@core.raw_get_content('admin/file', {:file => 'schema.xml'})) do |config|
-      config.noent # allow parsing of external entitity definitions
+      config.noent
     end
     load_explicit_fields
     load_dynamic_fields
@@ -130,18 +131,50 @@ class SimpleSolr::Schema
   def load_field_types
     @field_types = {}
     @core.get('schema/fieldtypes')['fieldTypes'].each do |fthash|
-      ft = FieldType.new_from_solr_hash(fthash)
+      ft        = FieldType.new_from_solr_hash(fthash)
+      type_name = ft.name
+      attr      = "[@name=\"#{type_name}\"]"
+      node      = @xmldoc.css("fieldType#{attr}").first || @xmldoc.css("fieldtype#{attr}").first
+      unless node
+        puts "Failed for type #{type_name}"
+      end
+      ft.xml    = node.to_xml
       add_field_type(ft)
     end
   end
 
+  def clean_schema_xml
+    d = @xmldoc.dup
+    d.xpath('//comment()').remove
+    d.css('field').remove
+    d.css('fieldType').remove
+    d.css('fieldtype').remove
+    d.css('dynamicField').remove
+    d.css('copyField').remove
+    d.css('dynamicfield').remove
+    d.css('copyfield').remove
+    d.css('schema').children.find_all { |x| x.name == 'text' }.each { |x| x.remove }
+    d
+  end
+
+  def to_xml
+    # Get a clean schema XML document
+    d = clean_schema_xml
+    s = d.css('schema').first
+    [fields, dynamic_fields, copy_fields, field_types].flatten.each do |f|
+      s.add_child f.to_xml_node
+    end
+    d.to_xml
+  end
+
 
   def write
-
+    File.open(@core.schema_file, 'w:utf-8') do |out|
+      out.puts self.to_xml
+    end
   end
 
   def reload
-    write
     @core.reload
   end
 
@@ -187,7 +220,7 @@ class SimpleSolr::Schema
   def first_matching_dfield(str)
     df = dynamic_fields.find { |x| x.matches str }
     if df
-      f = Field.new(df.to_h)
+      f        = Field.new(df.to_h)
       f[:name] = df.dynamic_name str
     end
     f
@@ -196,12 +229,12 @@ class SimpleSolr::Schema
 
   def resulting_fields(str)
     rv = []
-    f = first_matching_field(str)
+    f  = first_matching_field(str)
     rv << f
     copy_fields.each do |cf|
       if cf.matches(f.name)
-        dname = cf.dynamic_name(f.name)
-        fmf = Field.new(first_matching_field(dname).to_h)
+        dname      = cf.dynamic_name(f.name)
+        fmf        = Field.new(first_matching_field(dname).to_h)
         fmf[:name] = dname
         rv << fmf
       end
@@ -226,23 +259,23 @@ class SimpleSolr::Schema
 
 
     TEXT_ATTR_MAP = {
-        :name => 'name',
-        :type_name => 'type',
-        :precision_step => 'precisionStep',
+        :name                   => 'name',
+        :type_name              => 'type',
+        :precision_step         => 'precisionStep',
         :position_increment_gap => 'positionIncrementGap'
     }
 
     BOOL_ATTR_MAP = {
-        :stored => 'stored',
-        :indexed => 'indexed',
-        :multi => 'multiValued',
+        :stored            => 'stored',
+        :indexed           => 'indexed',
+        :multi             => 'multiValued',
         :sort_missing_last => 'sortMissingLast'
     }
 
     # Do this little bit of screwing around to forward unknown attributes to
     # the assigned type, if it exists. Will just use regular old methods
     # once I get the mappings nailed down.
-    [TEXT_ATTR_MAP.keys, BOOL_ATTR_MAP.keys].flatten.delete_if { |x| [:name, :type_name].include? x }.each do |x|
+    [TEXT_ATTR_MAP.keys, BOOL_ATTR_MAP.keys].flatten.delete_if { |x| [:type_name].include? x }.each do |x|
       define_method(x) do
         local = instance_variable_get("@#{x}".to_sym)
         if local.nil?
@@ -265,18 +298,26 @@ class SimpleSolr::Schema
     def self.new_from_solr_hash(h)
       f = self.new
 
-      TEXT_ATTR_MAP.each_pair do |field, xmlattr|
+      TEXT_ATTR_MAP.merge(BOOL_ATTR_MAP).each_pair do |field, xmlattr|
         f[field] = h[xmlattr]
       end
-      BOOL_ATTR_MAP.each_pair do |field, xmlattr|
-        f[field] = h[xmlattr]
-      end
-
       # Set the name "manually" to force the
       # matcher
       f.name = h['name']
 
       f
+    end
+
+
+    # Reverse the process to get XML
+    def to_xml_node(doc = nil)
+      doc ||= Nokogiri::XML::Document.new
+      xml = xml_node(doc)
+      TEXT_ATTR_MAP.merge(BOOL_ATTR_MAP).each_pair do |field, xmlattr|
+        iv = instance_variable_get("@#{field}".to_sym)
+        xml[xmlattr] = iv unless iv.nil?
+      end
+      xml
     end
 
     def [](k)
@@ -307,10 +348,6 @@ class SimpleSolr::Schema
     end
 
 
-    def stored?
-      stored
-    end
-
   end
 
 
@@ -320,15 +357,15 @@ class SimpleSolr::Schema
     attr_accessor :type_name, :type
     attr_reader :matcher
 
+
     def initialize(*args)
       super
       @dynamic = false
       @copy_to = []
     end
 
-
-    def stored?
-      defined? stored ? stored : type.stored?
+    def xml_node(doc)
+      Nokogiri::XML::Element.new('field', doc)
     end
 
     # We can only resolve the actual type in the presense of a
@@ -340,22 +377,10 @@ class SimpleSolr::Schema
 
 
     def name=(n)
-      @name = n
+      @name    = n
       @matcher = derive_matcher(n)
     end
 
-
-    #  def to_oga_node
-    #    e      = Oga::XML::Element.new
-    #    e.name = 'field'
-    #    TEXT_ATTR_MAP.each_pair do |field, xmlattr|
-    #      e.set(xmlattr, self[field]) unless self[field].nil?
-    #    end
-    #    BOOL_ATTR_MAP.each_pair do |field, xmlattr|
-    #      e.set(xmlattr, self[field].to_s) unless self[field].nil?
-    #    end
-    #    e
-    #  end
   end
 
 
@@ -366,6 +391,10 @@ class SimpleSolr::Schema
       @dynamic = true
     end
 
+    def xml_node(doc)
+      Nokogiri::XML::Element.new('dynamicField', doc)
+    end
+
     # What name will we get from a matching thing?
     def dynamic_name(s)
       m = @matcher.match(s)
@@ -374,29 +403,46 @@ class SimpleSolr::Schema
       end
     end
 
-
-    # Dynamic fields are basically the same as regular fields,
-    # but with a different tag
-
-    def to_oga_node
-      e = super
-      e.name = 'dynamicField'
-      e
-    end
-
   end
 
 
-  # A basic field type
-  #
-  # We don't even try to represent the analysis chain; just store the raw
-  # xml
+# A basic field type
+#
+# We don't even try to represent the analysis chain; just store the raw
+# xml
   class FieldType < Field_or_Type
-    attr_accessor :xml, :class
+    attr_accessor :xml, :solr_class
 
     def initialize(*args)
       super
       @xml = nil
+    end
+
+    def type
+      nil
+    end
+
+    def xml_node(doc)
+      ft          = Nokogiri::XML::Element.new('fieldType', doc)
+      ft['class'] = self.solr_class
+      Nokogiri.XML(xml).children.first.children.each do |c|
+        ft.add_child(c)
+      end
+      ft
+    end
+
+    def self.new_from_solr_hash(h)
+      ft            = super
+      ft.solr_class = h['class']
+      ft
+    end
+
+    # Luckily, a nokogiri node can act like a hash, so we can
+    # just re-use #new_from_solr_hash
+    def self.new_from_xml(xml)
+      ft     = new_from_solr_hash(Nokogiri.XML(xml).children.first)
+      ft.xml = @xml
+      ft
     end
   end
 
@@ -406,9 +452,9 @@ class SimpleSolr::Schema
     attr_accessor :source, :dest
 
     def initialize(source, dest)
-      self.source = source
-      @dest = dest
-      @matcher = derive_matcher(source)
+      self.source   = source
+      @dest         = dest
+      @matcher      = derive_matcher(source)
       @dest_matcher = derive_matcher(dest)
     end
 
@@ -427,7 +473,15 @@ class SimpleSolr::Schema
 
     def source=(s)
       @matcher = derive_matcher(s)
-      @source = s
+      @source  = s
+    end
+
+    def to_xml_node(doc = nil)
+      doc          ||= Nokogiri::XML::Document.new
+      cf           = Nokogiri::XML::Element.new('copyField', doc)
+      cf['source'] = source
+      cf['dest']   = dest
+      cf
     end
 
 
