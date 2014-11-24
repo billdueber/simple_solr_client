@@ -58,6 +58,7 @@ class SimpleSolr::Schema
 
   def add_field(f)
     @fields[f.name] = f
+    field(f.name)
   end
 
 
@@ -445,7 +446,7 @@ class SimpleSolr::Schema
     # just re-use #new_from_solr_hash
     def self.new_from_xml(xml)
       ft     = new_from_solr_hash(Nokogiri.XML(xml).children.first)
-      ft.xml = @xml
+      ft.xml = xml
       ft
     end
   end
