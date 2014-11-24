@@ -22,33 +22,33 @@ class SimpleSolr::Schema
   attr_reader :xmldoc
 
   def initialize(core)
-    @core           = core
-    @fields         = {}
+    @core = core
+    @fields = {}
     @dynamic_fields = {}
-    @copy_fields    = Hash.new { |h, k| h[k] = [] }
-    @field_types    = {}
+    @copy_fields = Hash.new { |h, k| h[k] = [] }
+    @field_types = {}
     self.load
   end
 
 
   def fields
-    @fields.values
+    @fields.values.map { |x| x.resolve_type(self) }
   end
 
   def field(n)
-    @fields[n]
+    @fields[n].resolve_type(self)
+  end
+
+  def dynamic_fields
+    @dynamic_fields.values.map { |x| x.resolve_type(self) }
   end
 
   def dynamic_field(n)
-    @dynamic_fields[n]
+    @dynamic_fields[n].resolve_type(self)
   end
 
   def copy_fields_for(n)
     @copy_fields[n]
-  end
-
-  def dynamic_fields
-    @dynamic_fields.values
   end
 
   def copy_fields
@@ -60,13 +60,14 @@ class SimpleSolr::Schema
   end
 
 
-  def fieldTypes
-    @fieldTypes.values
+  def field_types
+    @field_types.values
   end
 
-  def fieldType(k)
-    @fieldTypes[k]
+  def field_type(k)
+    @field_types[k]
   end
+
 
   # When we add dynamic fields, we need to keep them sorted by
   # lenght of the key, since that's how they match
@@ -74,7 +75,7 @@ class SimpleSolr::Schema
     raise "Dynamic field should be dynamic and have a '*' in it somewhere; '#{f.name}' does not" unless f.name =~ /\*/
     @dynamic_fields[f.name] = f
 
-    @dynamic_fields         = @dynamic_fields.sort { |a, b| b[0].size <=> a[0].size }.to_h
+    @dynamic_fields = @dynamic_fields.sort { |a, b| b[0].size <=> a[0].size }.to_h
 
   end
 
@@ -83,16 +84,21 @@ class SimpleSolr::Schema
     cf << f
   end
 
+  def add_field_type(ft)
+    @field_types[ft.name] = ft
+  end
+
 
   # For loading, we get the information about the fields via the API,
   # but grab an XML document for modifying/writing
   def load
-    @xmldoc = Nokogiri.XML(@core.raw_get_content('admin/file', {:file => 'schema.xml'}))  do |config|
+    @xmldoc = Nokogiri.XML(@core.raw_get_content('admin/file', {:file => 'schema.xml'})) do |config|
       config.noent # allow parsing of external entitity definitions
     end
     load_explicit_fields
     load_dynamic_fields
     load_copy_fields
+    load_field_types
   end
 
 
@@ -118,6 +124,14 @@ class SimpleSolr::Schema
     @copy_fields = Hash.new { |h, k| h[k] = [] }
     @core.get('schema/copyfields')['copyFields'].each do |cfield_hash|
       add_copy_field(CopyField.new(cfield_hash['source'], cfield_hash['dest']))
+    end
+  end
+
+  def load_field_types
+    @field_types = {}
+    @core.get('schema/fieldtypes')['fieldTypes'].each do |fthash|
+      ft = FieldType.new_from_solr_hash(fthash)
+      add_field_type(ft)
     end
   end
 
@@ -173,7 +187,7 @@ class SimpleSolr::Schema
   def first_matching_dfield(str)
     df = dynamic_fields.find { |x| x.matches str }
     if df
-      f        = Field.new(df.to_h)
+      f = Field.new(df.to_h)
       f[:name] = df.dynamic_name str
     end
     f
@@ -182,12 +196,12 @@ class SimpleSolr::Schema
 
   def resulting_fields(str)
     rv = []
-    f  = first_matching_field(str)
+    f = first_matching_field(str)
     rv << f
     copy_fields.each do |cf|
       if cf.matches(f.name)
-        dname      = cf.dynamic_name(f.name)
-        fmf        = Field.new(first_matching_field(dname).to_h)
+        dname = cf.dynamic_name(f.name)
+        fmf = Field.new(first_matching_field(dname).to_h)
         fmf[:name] = dname
         rv << fmf
       end
@@ -202,25 +216,42 @@ class SimpleSolr::Schema
 
   class Field_or_Type
     attr_accessor :name,
-                  :type_name,
-                  :indexed,
-                  :stored,
-                  :multi,
-                  :sort_missing_last
+                  :type_name
+    attr_writer :indexed,
+                :stored,
+                :multi,
+                :sort_missing_last,
+                :precision_step,
+                :position_increment_gap
 
 
     TEXT_ATTR_MAP = {
-        :name      => 'name',
+        :name => 'name',
         :type_name => 'type',
+        :precision_step => 'precisionStep',
+        :position_increment_gap => 'positionIncrementGap'
     }
 
     BOOL_ATTR_MAP = {
-        :stored            => 'stored',
-        :indexed           => 'indexed',
-        :multi             => 'multiValued',
+        :stored => 'stored',
+        :indexed => 'indexed',
+        :multi => 'multiValued',
         :sort_missing_last => 'sortMissingLast'
     }
 
+    # Do this little bit of screwing around to forward unknown attributes to
+    # the assigned type, if it exists. Will just use regular old methods
+    # once I get the mappings nailed down.
+    [TEXT_ATTR_MAP.keys, BOOL_ATTR_MAP.keys].flatten.delete_if { |x| [:name, :type_name].include? x }.each do |x|
+      define_method(x) do
+        local = instance_variable_get("@#{x}".to_sym)
+        if local.nil?
+          self.type[x] if self.type
+        else
+          local
+        end
+      end
+    end
 
     def ==(other)
       if other.respond_to? :name
@@ -257,7 +288,6 @@ class SimpleSolr::Schema
     end
 
 
-
     def to_h
       h = {}
       instance_variables.each do |iv|
@@ -287,7 +317,7 @@ class SimpleSolr::Schema
   class Field < Field_or_Type
     include Matcher
 
-    attr_accessor :type_name
+    attr_accessor :type_name, :type
     attr_reader :matcher
 
     def initialize(*args)
@@ -301,24 +331,31 @@ class SimpleSolr::Schema
       defined? stored ? stored : type.stored?
     end
 
+    # We can only resolve the actual type in the presense of a
+    # particular schema
+    def resolve_type(schema)
+      self.type = schema.field_type(self.type_name)
+      self
+    end
+
 
     def name=(n)
-      @name    = n
+      @name = n
       @matcher = derive_matcher(n)
     end
 
 
-    def to_oga_node
-      e      = Oga::XML::Element.new
-      e.name = 'field'
-      TEXT_ATTR_MAP.each_pair do |field, xmlattr|
-        e.set(xmlattr, self[field]) unless self[field].nil?
-      end
-      BOOL_ATTR_MAP.each_pair do |field, xmlattr|
-        e.set(xmlattr, self[field].to_s) unless self[field].nil?
-      end
-      e
-    end
+    #  def to_oga_node
+    #    e      = Oga::XML::Element.new
+    #    e.name = 'field'
+    #    TEXT_ATTR_MAP.each_pair do |field, xmlattr|
+    #      e.set(xmlattr, self[field]) unless self[field].nil?
+    #    end
+    #    BOOL_ATTR_MAP.each_pair do |field, xmlattr|
+    #      e.set(xmlattr, self[field].to_s) unless self[field].nil?
+    #    end
+    #    e
+    #  end
   end
 
 
@@ -342,7 +379,7 @@ class SimpleSolr::Schema
     # but with a different tag
 
     def to_oga_node
-      e      = super
+      e = super
       e.name = 'dynamicField'
       e
     end
@@ -369,9 +406,9 @@ class SimpleSolr::Schema
     attr_accessor :source, :dest
 
     def initialize(source, dest)
-      self.source   = source
-      @dest         = dest
-      @matcher      = derive_matcher(source)
+      self.source = source
+      @dest = dest
+      @matcher = derive_matcher(source)
       @dest_matcher = derive_matcher(dest)
     end
 
@@ -390,12 +427,13 @@ class SimpleSolr::Schema
 
     def source=(s)
       @matcher = derive_matcher(s)
-      @source  = s
+      @source = s
     end
 
 
   end
-
-
 end
+
+
+
 
