@@ -425,9 +425,13 @@ class SimpleSolr::Schema
     def xml_node(doc)
       ft          = Nokogiri::XML::Element.new('fieldType', doc)
       ft['class'] = self.solr_class
-      Nokogiri.XML(xml).children.first.children.each do |c|
-        ft.add_child(c)
+      xmldoc = Nokogiri.XML(xml)
+      unless xmldoc.children.empty?
+        xmldoc.children.first.children.each do |c|
+          ft.add_child(c)
+        end
       end
+
       ft
     end
 
