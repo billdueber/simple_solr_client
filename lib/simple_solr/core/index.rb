@@ -2,7 +2,7 @@ module SimpleSolr::Core::Index
   # Add the given hash or array of hashes
   # @return self
   def add_docs(*hash_or_hashes)
-    update(hash_or_hashes)
+    update(hash_or_hashes.flatten)
     self
   end
 
