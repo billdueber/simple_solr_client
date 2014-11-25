@@ -9,7 +9,12 @@ solr is actually doing.
 Most useful when running on the same machine as the solr install, but
 still useful even when you're not.
 
-## Example Usage
+## Basic add/delete/query
+
+Right now, it supports only the most basic add/delete/query operations.
+Adding in support for more complex queries is on the TODO list, but took
+a back seat to dealing with the schema.
+
 
 ```ruby
 
@@ -21,29 +26,61 @@ core = client.core('core1') # must already exist!
 core.url #=> "http://localhost:8983/solr/core1"
 
 core.name #=> 'core1'
-core.number_of_documents #=> 7
+core.number_of_documents #=> 7, what was in there already
 core.instance_dir #=> "/Users/dueberb/devel/java/solr/example/solr/collection1/"
 core.schema_file #=> <path>/<to>/<schema.xml>
 
-# Remove all the docs
+# Remove all the indexed documents and (automatically) commit
 core.clear
 
-# Add
-h1 = {:id => 'b', :name=>"Bill Dueber"}
-h2 = {:id => 'd', :name=>"Danit Brown"}
-h3 = {:id => 'z', :name=>"Ziv Brown Dueber"}
+# Add documents
+#
+# name_t is a text_general, multiValued, indexed, stored field
+h1 = {:id => 'b', :name_t=>"Bill Dueber"}
+h2 = {:id => 'd', :name_t=>"Danit Brown"}
+h3 = {:id => 'z', :name_t=>"Ziv Brown Dueber"}
 
 core.add_docs(h1)
 
-core.number_of_documents #=> 0? By why? Oh...
+core.number_of_documents #=> 0? But why? Oh, right...
 core.commit
-core.number_of_documents #=> 1
+core.number_of_documents #=> 1  There we go
 
 # You can chain many core operations
 core.clear.add_docs([h1,h2, h3]).commit.optimize.number_of_documents #=> 3
 
-# Only the most basic querying is possible
+# only the most basic querying is currently supported
+# Result of a query is a QueryResponse, which contains a list of Document
+# objects, which respond to ['fieldname']
 
+core.all.size #=> 3
+core.all.map{|d| d['name_t']} #=> [['Bill Dueber'], ['Danit Brown'], ['Ziv Brown Dueber']]
+
+# Simple field/value search
+docs = core.fv_search(:name_t, 'Brown')
+docs.class #=>  SimpleSolr::Response::QueryResponse
+
+docs.size #=> 2
+docs..map{|d| d['name_t']} #=> [['Danit Brown'], ['Ziv Brown Dueber']]
+
+# Special-case id/score
+docs.first.id #=> 'd'
+docs.first.score #=> 0.625
+
+# Figure out where documents fall
+docs = core.fv_search(:name_t, 'Brown Dueber')
+docs.size #=> 3
+
+# "Ziv Brown Dueber" contains both search terms, so should come first
+
+docs.rank('z') #=> 1 (check by id)
+docs.rank('z') < docs.rank('b') #=> true
+
+# Of course, we can do it by score
+docs.score('z') > docs.score('d')
+
+# In addition to #clear, we can delete by simple query
+core.delete('name_t:Dueber').commit.number_of_documents #=> 1
 
 
 ```
