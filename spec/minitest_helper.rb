@@ -21,12 +21,16 @@ end
 
 class TempCore
   include Singleton
-  attr_reader :core, :client
+  attr_reader :client
   def initialize
     @client = TestClient.instance.client
-    @core = @client.temp_core
-    Minitest.after_run { @core.unload }
+    @tempcores = {}
+    Minitest.after_run { @client.unload_temp_cores }
+  end
 
+  def core(name)
+    @tempcores[name] ||= @client.temp_core
+    @tempcores[name]
   end
 end
 
