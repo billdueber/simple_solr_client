@@ -16,13 +16,28 @@ Solr is complex.
 
 It's complex enough, and fuddles with enough edge cases, that reading
 the documentation and/or the code doesn't get me the understanding
-that I want. I wanted a way to test what solr is actually doing, and
+that I feel I need.
+
+If I were smarter, maybe I wouldn't need something like this.
+
+I wanted a way to test what solr is actually doing, and
 this library is a way for me to start to do that in a fashion that's
-more convenient that doing everything "by hand" in the admin dashboard.
+more convenient that doing everything "by hand" in the admin dashboard
+or running queries via URLs in my browser or using curl.
+
+I wanted a way to figure out what fields (of what types) are being created,
+how things were being  tokenized, etc., but all within the comfort of a test
+suite that I could run against solr configurations to make sure things
+weren't breaking when I made changes. I wanted to build up a structure around relevance
+ranking tests (still coming, sadly) and quickly swap out different
+configs to make sure it all works as I expect.
+
+So: a simple solr library, with more exposure than most of what's out there
+to the solr administration API and the introspection/analysis it affords.
 
 # Features:
 
-  * Basic add/delete/query
+  * [Basic add/delete/query](#basic-add_delete_query)
   * Commit/optimize/clear an index
   * Reload a core after editing/adjusting a config file
   * Inspect lists of fields, dynamicFields, copyFields, and
@@ -30,12 +45,15 @@ more convenient that doing everything "by hand" in the admin dashboard.
   * Determine which fields (and their properties) would be
     created when a given field name is indexed, taking into
     account dynamic fields and copyField directives.
+  * Get list of the tokens that would be created if you
+    send a string to a paricular fieldType (like in the
+    solr admin analysis page)
 
 Additional features when running against a localhost solr:
   * Spin up a temporary core to play with
   * Add/remove fields, dynamic_fields, copy_fields, and field types
     on the fly
-  *
+
 
 ## Basic add/delete/query
 
@@ -91,15 +109,14 @@ docs.class #=>  SimpleSolr::Response::QueryResponse
 docs.size #=> 2
 docs..map{|d| d['name_t']} #=> [['Danit Brown'], ['Ziv Brown Dueber']]
 
-# Special-case id/score
+# Special-case id/score as regular methods
 docs.first.id #=> 'd'
 docs.first.score #=> 0.625
 
-# Figure out where documents fall
+# Figure out where documents fall. "Ziv Brown Dueber" contains both
+# search terms, so should come first
 docs = core.fv_search(:name_t, 'Brown Dueber')
 docs.size #=> 3
-
-# "Ziv Brown Dueber" contains both search terms, so should come first
 
 docs.rank('z') #=> 1 (check by id)
 docs.rank('z') < docs.rank('b') #=> true
@@ -113,7 +130,50 @@ core.delete('name_t:Dueber').commit.number_of_documents #=> 1
 
 ```
 
-## Introspection
+## Introspection/Analysis
+
+Each core exposes a `schema` object that allows you to find out about
+the fields, copyfields, and field types, and (on localhost) muck
+with the system on the fly.
+
+```ruby
+
+# Get a list of cores
+client.cores #=> ['core1']
+core = client.core('core1')
+
+# Get an object representing the schema.xml file
+schema = core.schema #=> SimpleSolr::Schema object
+
+# Get lists of field, dynamicFields, copyFields, and fieldTypes
+# all as SimpleSolr::Schema::XXX objects
+
+explicit_fields = schema.fields
+dynamic_fields  = schema.dynamic_fields
+copy_fields     = schema.copy_fields
+field_types     = schema.field_types
+
+```
+
+### Regular fields
+
+Internally I call these "explicit_fields" as opposed to
+
+f = schema.field('id')
+f.name #=> 'id'
+f.type.name #=> 'string'
+f.type.solr_class #=> 'solr.StrField'
+
+# Basic atributes
+f.stored  #=> true
+f.indexed #=> true
+f.multi   #=> nil
+
+f.matches
+
+
+
+```
 
 
 
