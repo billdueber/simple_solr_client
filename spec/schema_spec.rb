@@ -22,6 +22,14 @@ describe "Schema" do
       @schema.field('id').type.must_equal @schema.field_type('string')
     end
 
+    it "matches on exact match" do
+      @schema.field('id').matches('id').must_equal true
+    end
+
+    it "doesn't match on inexact match" do
+      @schema.field('id').matches('testid').must_equal false
+    end
+
   end
 
   describe "the _i dynamic field" do
@@ -31,6 +39,13 @@ describe "Schema" do
 
     it "has type int" do
       @schema.dynamic_field("*_i").type.must_equal @schema.field_type('int')
+    end
+
+    it 'matches appropriates' do
+      dfield  = @schema.dynamic_field('*_i')
+      dfield.matches('test_i').must_equal true
+      dfield.matches('test_s_i').must_equal true
+      dfield.matches('test_i_s').must_equal false
     end
 
     it "is found when looking for a match" do

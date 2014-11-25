@@ -9,7 +9,7 @@ require 'simple_solr/schema/field_type'
 
 class SimpleSolr::Schema
   # A simplistic representation of a schema
-  include SimpleSolr::Schema::Matcher
+
 
   attr_reader :xmldoc
 
@@ -93,6 +93,7 @@ class SimpleSolr::Schema
   end
 
   def add_field_type(ft)
+    ft.core = @core
     @field_types[ft.name] = ft
   end
 

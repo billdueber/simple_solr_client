@@ -1,10 +1,20 @@
+require 'simple_solr/schema/analysis'
+
 # A basic field type
 #
 # We don't even try to represent the analysis chain; just store the raw
 # xml
+#
+# We also, in blatent disregard for separation of concerns and encapsulation,
+# put in a place to store a core. This is filled when the fieldtype is added
+# to the schema via add_field_type, so we can have access to the
+# analysis chain.
+
 class SimpleSolr::Schema
   class FieldType < Field_or_Type
-    attr_accessor :xml, :solr_class
+    include SimpleSolr::Schema::Analysis
+
+    attr_accessor :xml, :solr_class, :core
 
     def initialize(*args)
       super
