@@ -3,6 +3,9 @@ require 'pry'
 
 require 'simple_solr/schema/matcher'
 require 'simple_solr/schema/copyfield'
+require 'simple_solr/schema/field'
+require 'simple_solr/schema/dynamic_field'
+require 'simple_solr/schema/field_type'
 
 class SimpleSolr::Schema
   # A simplistic representation of a schema
@@ -65,7 +68,7 @@ class SimpleSolr::Schema
 
 
   # When we add dynamic fields, we need to keep them sorted by
-  # lenght of the key, since that's how they match
+  # length of the key, since that's how they match
   def add_dynamic_field(f)
     raise "Dynamic field should be dynamic and have a '*' in it somewhere; '#{f.name}' does not" unless f.name =~ /\*/
     @dynamic_fields[f.name] = f
@@ -249,215 +252,6 @@ class SimpleSolr::Schema
       end
     end
     rv.uniq
-  end
-
-
-  # A field, and some of its info
-  # Use a struct because it'll make it easier to
-  # set things programmatically.
-
-  class Field_or_Type
-    attr_accessor :name,
-                  :type_name
-    attr_writer :indexed,
-                :stored,
-                :multi,
-                :sort_missing_last,
-                :precision_step,
-                :position_increment_gap
-
-
-    TEXT_ATTR_MAP = {
-        :name                   => 'name',
-        :type_name              => 'type',
-        :precision_step         => 'precisionStep',
-        :position_increment_gap => 'positionIncrementGap'
-    }
-
-    BOOL_ATTR_MAP = {
-        :stored            => 'stored',
-        :indexed           => 'indexed',
-        :multi             => 'multiValued',
-        :sort_missing_last => 'sortMissingLast'
-    }
-
-    # Do this little bit of screwing around to forward unknown attributes to
-    # the assigned type, if it exists. Will just use regular old methods
-    # once I get the mappings nailed down.
-    [TEXT_ATTR_MAP.keys, BOOL_ATTR_MAP.keys].flatten.delete_if { |x| [:type_name].include? x }.each do |x|
-      define_method(x) do
-        local = instance_variable_get("@#{x}".to_sym)
-        if local.nil?
-          self.type[x] if self.type
-        else
-          local
-        end
-      end
-    end
-
-    def ==(other)
-      if other.respond_to? :name
-        name == other.name
-      else
-        name == other
-      end
-    end
-
-
-    def self.new_from_solr_hash(h)
-      f = self.new
-
-      TEXT_ATTR_MAP.merge(BOOL_ATTR_MAP).each_pair do |field, xmlattr|
-        f[field] = h[xmlattr]
-      end
-      # Set the name "manually" to force the
-      # matcher
-      f.name = h['name']
-
-      f
-    end
-
-
-    # Reverse the process to get XML
-    def to_xml_node(doc = nil)
-      doc ||= Nokogiri::XML::Document.new
-      xml = xml_node(doc)
-      TEXT_ATTR_MAP.merge(BOOL_ATTR_MAP).each_pair do |field, xmlattr|
-        iv = instance_variable_get("@#{field}".to_sym)
-        xml[xmlattr] = iv unless iv.nil?
-      end
-      xml
-    end
-
-    def [](k)
-      self.send(k.to_sym)
-    end
-
-    def []=(k, v)
-      self.send("#{k}=".to_sym, v)
-    end
-
-
-    def to_h
-      h = {}
-      instance_variables.each do |iv|
-        h[iv.to_s.sub('@', '')] = instance_variable_get(iv)
-      end
-      h
-    end
-
-    def initialize(h={})
-      h.each_pair do |k, v|
-        begin
-          self[k] = v
-        rescue
-        end
-
-      end
-    end
-
-
-  end
-
-
-  class Field < Field_or_Type
-    include Matcher
-
-    attr_accessor :type_name, :type
-    attr_reader :matcher
-
-
-    def initialize(*args)
-      super
-      @dynamic = false
-      @copy_to = []
-    end
-
-    def xml_node(doc)
-      Nokogiri::XML::Element.new('field', doc)
-    end
-
-    # We can only resolve the actual type in the presense of a
-    # particular schema
-    def resolve_type(schema)
-      self.type = schema.field_type(self.type_name)
-      self
-    end
-
-
-    def name=(n)
-      @name    = n
-      @matcher = derive_matcher(n)
-    end
-
-
-  end
-
-
-  class DynamicField < Field
-
-    def initialize(*args)
-      super
-      @dynamic = true
-    end
-
-    def xml_node(doc)
-      Nokogiri::XML::Element.new('dynamicField', doc)
-    end
-
-    # What name will we get from a matching thing?
-    def dynamic_name(s)
-      m = @matcher.match(s)
-      if m
-        m[1] << m[2]
-      end
-    end
-
-  end
-
-
-# A basic field type
-#
-# We don't even try to represent the analysis chain; just store the raw
-# xml
-  class FieldType < Field_or_Type
-    attr_accessor :xml, :solr_class
-
-    def initialize(*args)
-      super
-      @xml = nil
-    end
-
-    def type
-      nil
-    end
-
-    def xml_node(doc)
-      ft          = Nokogiri::XML::Element.new('fieldType', doc)
-      ft['class'] = self.solr_class
-      xmldoc = Nokogiri.XML(xml)
-      unless xmldoc.children.empty?
-        xmldoc.children.first.children.each do |c|
-          ft.add_child(c)
-        end
-      end
-
-      ft
-    end
-
-    def self.new_from_solr_hash(h)
-      ft            = super
-      ft.solr_class = h['class']
-      ft
-    end
-
-    # Luckily, a nokogiri node can act like a hash, so we can
-    # just re-use #new_from_solr_hash
-    def self.new_from_xml(xml)
-      ft     = new_from_solr_hash(Nokogiri.XML(xml).children.first)
-      ft.xml = xml
-      ft
-    end
   end
 
 end

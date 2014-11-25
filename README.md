@@ -9,6 +9,34 @@ solr is actually doing.
 Most useful when running on the same machine as the solr install, but
 still useful even when you're not.
 
+
+## Motivation
+
+Solr is complex.
+
+It's complex enough, and fuddles with enough edge cases, that reading
+the documentation and/or the code doesn't get me the understanding
+that I want. I wanted a way to test what solr is actually doing, and
+this library is a way for me to start to do that in a fashion that's
+more convenient that doing everything "by hand" in the admin dashboard.
+
+# Features:
+
+  * Basic add/delete/query
+  * Commit/optimize/clear an index
+  * Reload a core after editing/adjusting a config file
+  * Inspect lists of fields, dynamicFields, copyFields, and
+    fieldTypes
+  * Determine which fields (and their properties) would be
+    created when a given field name is indexed, taking into
+    account dynamic fields and copyField directives.
+
+Additional features when running against a localhost solr:
+  * Spin up a temporary core to play with
+  * Add/remove fields, dynamic_fields, copy_fields, and field types
+    on the fly
+  *
+
 ## Basic add/delete/query
 
 Right now, it supports only the most basic add/delete/query operations.
@@ -85,19 +113,12 @@ core.delete('name_t:Dueber').commit.number_of_documents #=> 1
 
 ```
 
+## Introspection
 
 
-## Motivation
 
-Solr is complex.
 
-It's complex enough, and fuddles with enough edge cases, that reading
-the documentation and/or the code doesn't get me the understanding
-that I want. I wanted a way to test what solr is actually doing, and
-this library is a way for me to start to do that.
 
-# Features
-  *
 
 
 
