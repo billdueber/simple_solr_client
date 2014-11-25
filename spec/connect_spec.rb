@@ -3,7 +3,7 @@ require 'minitest_helper'
 describe "Basic connection to a running solr" do
 
   before do
-    @core = TempCore.instance.core
+    @core = TempCore.instance.core('connect')
     @client = TempCore.instance.client
   end
 
@@ -17,7 +17,7 @@ describe "Basic connection to a running solr" do
   end
 
   it "gets a ping" do
-    @core.get('admin/ping')['status'].must_equal 'OK'
+    @core.up?.must_equal true
   end
 
 

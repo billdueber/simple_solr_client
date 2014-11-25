@@ -3,7 +3,7 @@ require 'minitest_helper'
 describe "Basic indexing/" do
 
   before do
-    @core = TempCore.instance.core
+    @core = TempCore.instance.core('index_spec')
     @core.clear
   end
 
@@ -13,7 +13,7 @@ describe "Basic indexing/" do
   end
 
   it "adds" do
-    @core.add_docs({:id=>1, :name=>"Bill"}).commit
+    @core.add_docs({:id=>1, :name_s=>"Bill"}).commit
     @core.number_of_documents.must_equal 1
   end
 
