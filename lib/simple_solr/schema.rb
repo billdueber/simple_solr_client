@@ -1,24 +1,12 @@
 require 'nokogiri'
 require 'pry'
 
+require 'simple_solr/schema/matcher'
+require 'simple_solr/schema/copyfield'
+
 class SimpleSolr::Schema
   # A simplistic representation of a schema
-
-  module Matcher
-    def derive_matcher(src)
-      if src =~ /\A\*(.*)/
-        Regexp.new("\\A(.*)(#{Regexp.escape($1)})\\Z")
-      else
-        src
-      end
-    end
-
-    def matches(s)
-      @matcher === s
-    end
-
-
-  end
+  include SimpleSolr::Schema::Matcher
 
   attr_reader :xmldoc
 
@@ -61,6 +49,11 @@ class SimpleSolr::Schema
     field(f.name)
   end
 
+  def drop_field(str)
+    @fields.delete(str)
+    self
+  end
+
 
   def field_types
     @field_types.values
@@ -81,13 +74,28 @@ class SimpleSolr::Schema
 
   end
 
+  def drop_dynamic_field(str)
+    @dynamic_fields.delete(str)
+    self
+  end
+
   def add_copy_field(f)
     cf = @copy_fields[f.source]
     cf << f
   end
 
+  def drop_copy_field(str)
+    @copy_fields.delete(str)
+    self
+  end
+
   def add_field_type(ft)
     @field_types[ft.name] = ft
+  end
+
+  def drop_field_type(str)
+    @field_types.delete(str)
+    self
   end
 
 
@@ -382,6 +390,7 @@ class SimpleSolr::Schema
       @matcher = derive_matcher(n)
     end
 
+
   end
 
 
@@ -451,46 +460,6 @@ class SimpleSolr::Schema
     end
   end
 
-  class CopyField
-    include Matcher
-
-    attr_accessor :source, :dest
-
-    def initialize(source, dest)
-      self.source   = source
-      @dest         = dest
-      @matcher      = derive_matcher(source)
-      @dest_matcher = derive_matcher(dest)
-    end
-
-    # What name will we get from a matching thing?
-    def dynamic_name(s)
-      return @dest unless @dest =~ /\*/
-
-      m = @matcher.match(s)
-      if m
-        prefix = m[1]
-        return @dest.sub(/\*/, prefix)
-      end
-      nil
-
-    end
-
-    def source=(s)
-      @matcher = derive_matcher(s)
-      @source  = s
-    end
-
-    def to_xml_node(doc = nil)
-      doc          ||= Nokogiri::XML::Document.new
-      cf           = Nokogiri::XML::Element.new('copyField', doc)
-      cf['source'] = source
-      cf['dest']   = dest
-      cf
-    end
-
-
-  end
 end
 
 
