@@ -204,7 +204,7 @@ core.schema.field('format').type.name #=> 'string'
 ### Dynamic fields
 
 The rule Solr uses for dynamic fields is "longest one wins"
-Right now, I'm only handling _trailing_ asterisks, so `*_t` will
+Right now, I'm only handling _leading_ asterisks, so `*_t` will
 work, but `text_*` will not.
 
 ```
@@ -287,7 +287,7 @@ ft.index_tokens 'When it rains, it pours'
 ```
 
 
-## `schema.resulting_fields(field_name)` -- What will I get if I index a field named str?
+## What will I get if I index a field named `str`?
 
 Dynamic- and copy-fields are very convenient, but it can make it hard to
 figure out what you're actually going to get in your indexed and
