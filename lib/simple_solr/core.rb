@@ -1,4 +1,4 @@
-# Pre-define the inheritance so Ruby doensn't complain
+# Pre-define the inheritance so Ruby doesn't complain
 # on import.
 require 'simple_solr/client'
 require 'simple_solr/schema'
