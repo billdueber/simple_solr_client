@@ -1,4 +1,4 @@
-require 'simple_solr/response/query_response'
+require 'simple_solr_client/response/query_response'
 
 module SimpleSolrClient::Core::Search
 

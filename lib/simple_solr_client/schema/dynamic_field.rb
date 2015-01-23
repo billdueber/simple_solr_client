@@ -1,4 +1,4 @@
-require 'simple_solr/schema/field'
+require 'simple_solr_client/schema/field'
 class SimpleSolrClient::Schema
   class DynamicField < Field
 

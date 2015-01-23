@@ -1,4 +1,4 @@
-require 'simple_solr/schema/analysis'
+require 'simple_solr_client/schema/analysis'
 
 # A basic field type
 #

@@ -1,10 +1,10 @@
 require 'nokogiri'
 
-require 'simple_solr/schema/matcher'
-require 'simple_solr/schema/copyfield'
-require 'simple_solr/schema/field'
-require 'simple_solr/schema/dynamic_field'
-require 'simple_solr/schema/field_type'
+require 'simple_solr_client/schema/matcher'
+require 'simple_solr_client/schema/copyfield'
+require 'simple_solr_client/schema/field'
+require 'simple_solr_client/schema/dynamic_field'
+require 'simple_solr_client/schema/field_type'
 
 class SimpleSolrClient::Schema
   # A simplistic representation of a schema

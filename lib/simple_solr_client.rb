@@ -22,11 +22,11 @@ require 'httpclient'
 require 'forwardable'
 require 'json'
 
-require "simple_solr/version"
+require "simple_solr_client/version"
 
 # Need to load core before client because of inter-dependencies resulting
 # in 'require' recursion
 
-require 'simple_solr/core'
-require 'simple_solr/client'
+require 'simple_solr_client/core'
+require 'simple_solr_client/client'
 

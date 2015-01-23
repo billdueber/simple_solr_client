@@ -1,8 +1,8 @@
 require 'httpclient'
-require 'simple_solr/response/generic_response'
+require 'simple_solr_client/response/generic_response'
 require 'securerandom'
 
-require 'simple_solr/core'
+require 'simple_solr_client/core'
 
 module SimpleSolrClient
 

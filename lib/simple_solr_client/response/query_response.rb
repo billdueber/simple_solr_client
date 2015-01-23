@@ -1,5 +1,5 @@
-require 'simple_solr/response/generic_response'
-require 'simple_solr/response/document'
+require 'simple_solr_client/response/generic_response'
+require 'simple_solr_client/response/document'
 
 class SimpleSolrClient::Response::QueryResponse < SimpleSolrClient::Response::GenericResponse
   extend Forwardable

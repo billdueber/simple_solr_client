@@ -1,4 +1,4 @@
-require 'simple_solr/schema/matcher'
+require 'simple_solr_client/schema/matcher'
 
 class SimpleSolrClient::Schema::CopyField
   include SimpleSolrClient::Schema::Matcher
