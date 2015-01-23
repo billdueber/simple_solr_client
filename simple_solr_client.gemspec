@@ -17,19 +17,12 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-
   # Thread-safe, cross-platform http client
   spec.add_dependency "httpclient"
 
   # XML parsing. Slower, but less screwy than Nokogiri
   spec.add_dependency 'nokogiri'
 
-  # Only require Oj for MRI/rbx. We'll use stock JSON on jruby
-  if defined? JRUBY
-    spec.platform = "java"
-  else
-    spec.add_dependency 'oj'
-  end
 
 
   spec.add_development_dependency "bundler", "~> 1.7"

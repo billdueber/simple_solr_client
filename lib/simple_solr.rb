@@ -20,17 +20,7 @@ end
 
 require 'httpclient'
 require 'forwardable'
-
-# Choose a JSON-compatible json parser/producer
-if defined? JRUBY_VERSION
-  require 'json'
-else
-  require 'oj'
-  Oj.mimic_JSON
-end
-
-
-
+require 'json'
 
 require "simple_solr/version"
 
