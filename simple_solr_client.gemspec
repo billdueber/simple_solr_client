@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'simple_solr/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "simple_solr"
+  spec.name          = "simple_solr_client"
   spec.version       = SimpleSolrClient::VERSION
   spec.authors       = ["Bill Dueber"]
   spec.email         = ["bill@dueber.com"]
