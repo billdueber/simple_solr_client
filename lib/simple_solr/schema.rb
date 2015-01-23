@@ -1,5 +1,4 @@
 require 'nokogiri'
-require 'pry'
 
 require 'simple_solr/schema/matcher'
 require 'simple_solr/schema/copyfield'
