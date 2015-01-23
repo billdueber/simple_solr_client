@@ -8,9 +8,8 @@ Gem::Specification.new do |spec|
   spec.version       = SimpleSolr::VERSION
   spec.authors       = ["Bill Dueber"]
   spec.email         = ["bill@dueber.com"]
-  spec.summary       = %q{TODO: Write a short summary. Required.}
-  spec.description   = %q{TODO: Write a longer description. Optional.}
-  spec.homepage      = ""
+  spec.summary       = %q{Interact with a Solr API via JSON}
+  spec.homepage      = "https://github.com/billdueber/simple_solr"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files -z`.split("\x0")
