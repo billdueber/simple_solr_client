@@ -1,4 +1,4 @@
-module SimpleSolr::Core::Index
+module SimpleSolrClient::Core::Index
   # Add the given hash or array of hashes
   # @return self
   def add_docs(*hash_or_hashes)

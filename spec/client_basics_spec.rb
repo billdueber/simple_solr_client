@@ -1,6 +1,6 @@
 require 'minitest_helper'
 
-describe SimpleSolr::Client do
+describe SimpleSolrClient::Client do
 
   before do
     @client = TestClient.instance.client
@@ -10,7 +10,7 @@ describe SimpleSolr::Client do
   end
 
   it "strips off a trailing slash for base_url" do
-    c = SimpleSolr::Client.new('http://localhost:8983/solr/')
+    c = SimpleSolrClient::Client.new('http://localhost:8983/solr/')
     c.base_url.must_equal 'http://localhost:8983/solr'
   end
 

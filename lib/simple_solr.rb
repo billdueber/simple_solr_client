@@ -1,4 +1,4 @@
-module SimpleSolr
+module SimpleSolrClient
 
   ESCAPE_CHARS = '+-&|!(){}[]^"~*?:\\'
   ESCAPE_MAP   = ESCAPE_CHARS.split(//).each_with_object({}) {|x,h| h[x] = "\\" + x}

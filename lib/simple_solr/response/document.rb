@@ -1,4 +1,4 @@
-class SimpleSolr::Response::Document
+class SimpleSolrClient::Response::Document
   extend Forwardable
   include Comparable
 

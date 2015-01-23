@@ -1,5 +1,5 @@
 # Base class for Field/DynamicField/FieldType
-module SimpleSolr
+module SimpleSolrClient
   class Schema
     class Field_or_Type
       attr_accessor :name,

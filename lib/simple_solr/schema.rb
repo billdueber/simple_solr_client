@@ -6,7 +6,7 @@ require 'simple_solr/schema/field'
 require 'simple_solr/schema/dynamic_field'
 require 'simple_solr/schema/field_type'
 
-class SimpleSolr::Schema
+class SimpleSolrClient::Schema
   # A simplistic representation of a schema
 
 

@@ -5,7 +5,7 @@ require 'simple_solr/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "simple_solr"
-  spec.version       = SimpleSolr::VERSION
+  spec.version       = SimpleSolrClient::VERSION
   spec.authors       = ["Bill Dueber"]
   spec.email         = ["bill@dueber.com"]
   spec.summary       = %q{Interact with a Solr API via JSON}

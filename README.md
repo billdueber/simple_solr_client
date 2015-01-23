@@ -1,4 +1,4 @@
-# SimpleSolr
+# SimpleSolrClient
 
 [Note: still woefully incomplete, but in the spirit of "release early,
 even if it's bad", here it is.]
@@ -71,7 +71,7 @@ a back seat to dealing with the schema.
 # A "client" points to a running solr, independent of the particular core
 # You get a core from it.
 
-client = SimpleSolr::Client.new('http://localhost:8983/solr')
+client = SimpleSolrClient::Client.new('http://localhost:8983/solr')
 core = client.core('core1') # must already exist!
 core.url #=> "http://localhost:8983/solr/core1"
 
@@ -109,7 +109,7 @@ core.all.map{|d| d['name_t']} #=> [['Bill Dueber'], ['Danit Brown'], ['Ziv Brown
 
 # Simple field/value search
 docs = core.fv_search(:name_t, 'Brown')
-docs.class #=>  SimpleSolr::Response::QueryResponse
+docs.class #=>  SimpleSolrClient::Response::QueryResponse
 
 docs.size #=> 2
 docs..map{|d| d['name_t']} #=> [['Danit Brown'], ['Ziv Brown Dueber']]
@@ -145,7 +145,7 @@ The schema object is initially created by using the admin api to
 get lists of fields and field types, and the XML for the field types
 is derived by parsing out the schema.xml returned by the api call. Solr
 does *not* expand entities in the returned XML, so if you have `system`
-entities (e.g., you're including stuff off of disk), simplesolr won't
+entities (e.g., you're including stuff off of disk), SimpleSolrClient won't
 get that text and things will likely blow up.
 
 
@@ -156,10 +156,10 @@ client.cores #=> ['core1']
 core = client.core('core1')
 
 # Get an object representing the schema.xml file
-schema = core.schema #=> SimpleSolr::Schema object
+schema = core.schema #=> SimpleSolrClient::Schema object
 
 # Get lists of field, dynamicFields, copyFields, and fieldTypes
-# all as SimpleSolr::Schema::XXX objects
+# all as SimpleSolrClient::Schema::XXX objects
 
 explicit_fields = schema.fields
 dynamic_fields  = schema.dynamic_fields
@@ -209,7 +209,7 @@ work, but `text_*` will not.
 
 ```
 schema.dynamic_fields.size #=> 23
-f = schema.dynamic_field('*_t') #=> SimpleSolr::Schema::DynamicField
+f = schema.dynamic_field('*_t') #=> SimpleSolrClient::Schema::DynamicField
 f.name #=> '*_t')
 f.type.name #=> 'text_general'
 f.stored #=> true
@@ -237,7 +237,7 @@ cfs = schema.copy_fields_for('*_ts')
 cfs.size #=> 2
 cfs.map(&:dest) #=> ["*_t", "*_s"]
 
-cf = SimpleSolr::Schema::CopyField.new('title', 'allfields')
+cf = SimpleSolrClient::Schema::CopyField.new('title', 'allfields')
 cf.source #=> 'title'
 cf.dest  #=>  'allfields'
 
@@ -266,7 +266,7 @@ it to via `schema.add_field_type(ft)`
 ```ruby
 
 schema.field_types.size #=> 23
-ft = schema.field_type('text') #=> SimpleSolr::Schema::FieldType
+ft = schema.field_type('text') #=> SimpleSolrClient::Schema::FieldType
 ft.name #=> 'text'
 ft.solr_class #=> 'solr.TextField'
 ft.multi #=> true
@@ -274,7 +274,7 @@ ft.stored #=> true
 ft.indexed #=> true
 # etc.
 
-newft = SimpleSolr::Schema::FieldType.new_from_xml(xmlstring)
+newft = SimpleSolrClient::Schema::FieldType.new_from_xml(xmlstring)
 schema.add_field_type(newft)
 
 ft.name #=> text

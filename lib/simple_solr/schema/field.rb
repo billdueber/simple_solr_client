@@ -1,5 +1,5 @@
 require 'simple_solr/schema/field_or_type'
-class SimpleSolr::Schema
+class SimpleSolrClient::Schema
   class Field < Field_or_Type
     include Matcher
 

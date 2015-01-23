@@ -10,9 +10,9 @@ require 'simple_solr/schema/analysis'
 # to the schema via add_field_type, so we can have access to the
 # analysis chain.
 
-class SimpleSolr::Schema
+class SimpleSolrClient::Schema
   class FieldType < Field_or_Type
-    include SimpleSolr::Schema::Analysis
+    include SimpleSolrClient::Schema::Analysis
 
     attr_accessor :xml, :solr_class, :core
 

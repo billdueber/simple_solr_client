@@ -1,7 +1,7 @@
 require 'simple_solr/response/generic_response'
 require 'simple_solr/response/document'
 
-class SimpleSolr::Response::QueryResponse < SimpleSolr::Response::GenericResponse
+class SimpleSolrClient::Response::QueryResponse < SimpleSolrClient::Response::GenericResponse
   extend Forwardable
   include Enumerable
 
@@ -20,7 +20,7 @@ class SimpleSolr::Response::QueryResponse < SimpleSolr::Response::GenericRespons
     @indexed_docs = {}
     resp['docs'].each_with_index do |d, i|
       doc_rank = i + @first_index
-      doc      = SimpleSolr::Response::Document.new(d)
+      doc      = SimpleSolrClient::Response::Document.new(d)
       doc.rank = doc_rank
       @docs << doc
       @indexed_docs[doc.id] = doc

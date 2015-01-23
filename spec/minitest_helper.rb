@@ -14,7 +14,7 @@ class TestClient
   include Singleton
   attr_reader :client, :core
   def initialize
-    @client = SimpleSolr::Client.new ENV['TEST_SOLR_URL']
+    @client = SimpleSolrClient::Client.new ENV['TEST_SOLR_URL']
     @core = @client.core ENV['TEST_SOLR_CORE']
   end
 end

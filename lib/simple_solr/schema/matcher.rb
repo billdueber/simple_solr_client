@@ -1,5 +1,5 @@
 # Figure out how to match a field name to a copyfield/dynamicfield
-class SimpleSolr::Schema
+class SimpleSolrClient::Schema
   module Matcher
     def derive_matcher(src)
       if src =~ /\A\*(.*)/

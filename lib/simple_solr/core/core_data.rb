@@ -1,4 +1,4 @@
-module SimpleSolr::Core::CoreData
+module SimpleSolrClient::Core::CoreData
   attr_reader :raw_solr_hash
 
 

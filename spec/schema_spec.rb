@@ -2,7 +2,7 @@ require 'minitest_helper'
 
 describe "Schema" do
 
-  SS = SimpleSolr::Schema # convenience
+  SS = SimpleSolrClient::Schema # convenience
 
   before do
     @core   = TempCore.instance.core('schema_spec')

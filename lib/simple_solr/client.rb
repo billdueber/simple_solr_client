@@ -4,9 +4,9 @@ require 'securerandom'
 
 require 'simple_solr/core'
 
-module SimpleSolr
+module SimpleSolrClient
 
-  # A Client talks to the Solr instance; use a SimpleSolr::Core to talk to a
+  # A Client talks to the Solr instance; use a SimpleSolrClient::Core to talk to a
   # particular core.
 
   class Client
@@ -71,25 +71,25 @@ module SimpleSolr
     end
 
     # Get from solr, and return a Response object of some sort
-    # @return [SimpleSolr::Response, response_type]
+    # @return [SimpleSolrClient::Response, response_type]
     def get(path, args = {}, response_type = nil)
-      response_type = SimpleSolr::Response::GenericResponse if response_type.nil?
+      response_type = SimpleSolrClient::Response::GenericResponse if response_type.nil?
       response_type.new(_get(path, args))
     end
 
     # Post an object as JSON and return a Response object
-    # @return [SimpleSolr::Response, response_type]
+    # @return [SimpleSolrClient::Response, response_type]
     def post_json(path, object_to_post, response_type = nil)
-      response_type = SimpleSolr::Response::GenericResponse if response_type.nil?
+      response_type = SimpleSolrClient::Response::GenericResponse if response_type.nil?
       response_type.new(_post_json(path, object_to_post))
     end
 
 
     # Get a client specific to the given core2
     # @param [String] corename The name of the core (which must already exist!)
-    # @return [SimpleSolr::Core]
+    # @return [SimpleSolrClient::Core]
     def core(corename)
-      SimpleSolr::Core.new(@base_url, corename)
+      SimpleSolrClient::Core.new(@base_url, corename)
     end
 
 

@@ -1,12 +1,12 @@
 require 'simple_solr/response/query_response'
 
-module SimpleSolr::Core::Search
+module SimpleSolrClient::Core::Search
 
   def fv_search(field, value)
     v = value
-    v = SimpleSolr.lucene_escape Array(value).join(' ') unless v == '*'
+    v = SimpleSolrClient.lucene_escape Array(value).join(' ') unless v == '*'
     kv = "#{field}:(#{v})"
-    get('select', {:q => kv}, SimpleSolr::Response::QueryResponse)
+    get('select', {:q => kv}, SimpleSolrClient::Response::QueryResponse)
   end
 
   def all

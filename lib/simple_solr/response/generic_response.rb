@@ -1,6 +1,6 @@
 require 'forwardable'
 
-module SimpleSolr
+module SimpleSolrClient
   module Response
     class GenericResponse
       extend Forwardable

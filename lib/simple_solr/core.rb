@@ -2,7 +2,7 @@
 # on import.
 require 'simple_solr/client'
 require 'simple_solr/schema'
-module SimpleSolr
+module SimpleSolrClient
   class Core < Client
   end
 end
@@ -13,13 +13,13 @@ require 'simple_solr/core/core_data'
 require 'simple_solr/core/index'
 require 'simple_solr/core/search'
 
-class SimpleSolr::Core
+class SimpleSolrClient::Core
 
 
-  include SimpleSolr::Core::Admin
-  include SimpleSolr::Core::CoreData
-  include SimpleSolr::Core::Index
-  include SimpleSolr::Core::Search
+  include SimpleSolrClient::Core::Admin
+  include SimpleSolrClient::Core::CoreData
+  include SimpleSolrClient::Core::Index
+  include SimpleSolrClient::Core::Search
 
 
   attr_reader :core
@@ -42,7 +42,7 @@ class SimpleSolr::Core
   end
 
   def schema
-    @schema ||= SimpleSolr::Schema.new(self)
+    @schema ||= SimpleSolrClient::Schema.new(self)
   end
 
 end

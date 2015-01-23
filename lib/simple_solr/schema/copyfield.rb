@@ -1,7 +1,7 @@
 require 'simple_solr/schema/matcher'
 
-class SimpleSolr::Schema::CopyField
-  include SimpleSolr::Schema::Matcher
+class SimpleSolrClient::Schema::CopyField
+  include SimpleSolrClient::Schema::Matcher
 
   attr_accessor :source, :dest
 

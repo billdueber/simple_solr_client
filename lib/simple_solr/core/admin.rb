@@ -1,4 +1,4 @@
-module SimpleSolr::Core::Admin
+module SimpleSolrClient::Core::Admin
   def ping
     get('admin/ping')
   end

@@ -1,5 +1,5 @@
 require 'simple_solr/schema/field'
-class SimpleSolr::Schema
+class SimpleSolrClient::Schema
   class DynamicField < Field
 
     def initialize(*args)

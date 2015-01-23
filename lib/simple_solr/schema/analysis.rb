@@ -5,7 +5,7 @@
 #
 # To be mixed into FieldType
 
-class SimpleSolr::Schema
+class SimpleSolrClient::Schema
   module Analysis
 
     #https://lucene.apache.org/solr/4_1_0/solr-core/org/apache/solr/handler/FieldAnalysisRequestHandler.html
