@@ -1,0 +1,296 @@
+<!-- This file generated from /private/tmp/solr6_test_conf/test_core/conf/schema/generate_dfields.rb
+     
+    In addition to all the dynamicField/copyField stuff, we'll
+    also set up a couple easy dynamicType definitions for
+    common cases where we want simpler resulting field names -->
+<!-- Sort types have to be single valued; we'll use ssort for
+      string sort and isort for integer sort. In both cases,
+      if you specify a stored value, it'll show up as a string
+      named <fieldname>_sort --> 
+<dynamicField name="*_ssort" type="string" indexed="true" stored="false" multiValued="false" />
+<dynamicField name="*_isort" type="long" indexed="true" stored="false" multiValued="false" />
+<dynamicField name="*_ssort_stored" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_isort_stored" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_ssort_stored" dest="*_sort" />
+<copyField source="*_ssort_stored" dest="*_ssort" />
+<copyField source="*_isort_stored" dest="*_sort" />
+<copyField source="*_isort_stored" dest="*_isort" />
+<dynamicField name="*_t" type="text" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_t_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_t_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_t_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_t_stored" dest="*_t" />
+<copyField source="*_t_stored" dest="*_a" />
+<copyField source="*_t_stored_single" dest="*_t" />
+<copyField source="*_t_stored_single" dest="*" />
+<copyField source="*_t_single" dest="*_t" />
+
+<dynamicField name="*_tp" type="text_nostem" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_tp_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_tp_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_tp_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_tp_stored" dest="*_tp" />
+<copyField source="*_tp_stored" dest="*_a" />
+<copyField source="*_tp_stored_single" dest="*_tp" />
+<copyField source="*_tp_stored_single" dest="*" />
+<copyField source="*_tp_single" dest="*_tp" />
+
+<dynamicField name="*_tl" type="text_leftjustified" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_tl_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_tl_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_tl_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_tl_stored" dest="*_tl" />
+<copyField source="*_tl_stored" dest="*_a" />
+<copyField source="*_tl_stored_single" dest="*_tl" />
+<copyField source="*_tl_stored_single" dest="*" />
+<copyField source="*_tl_single" dest="*_tl" />
+
+<dynamicField name="*_e" type="exactish" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_e_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_e_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_e_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_e_stored" dest="*_e" />
+<copyField source="*_e_stored" dest="*_a" />
+<copyField source="*_e_stored_single" dest="*_e" />
+<copyField source="*_e_stored_single" dest="*" />
+<copyField source="*_e_single" dest="*_e" />
+
+<dynamicField name="*_i" type="int" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_i_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_i_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_i_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_i_stored" dest="*_i" />
+<copyField source="*_i_stored" dest="*_a" />
+<copyField source="*_i_stored_single" dest="*_i" />
+<copyField source="*_i_stored_single" dest="*" />
+<copyField source="*_i_single" dest="*_i" />
+
+<dynamicField name="*_float" type="float" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_float_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_float_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_float_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_float_stored" dest="*_float" />
+<copyField source="*_float_stored" dest="*_a" />
+<copyField source="*_float_stored_single" dest="*_float" />
+<copyField source="*_float_stored_single" dest="*" />
+<copyField source="*_float_single" dest="*_float" />
+
+<dynamicField name="*_double" type="double" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_double_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_double_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_double_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_double_stored" dest="*_double" />
+<copyField source="*_double_stored" dest="*_a" />
+<copyField source="*_double_stored_single" dest="*_double" />
+<copyField source="*_double_stored_single" dest="*" />
+<copyField source="*_double_single" dest="*_double" />
+
+<dynamicField name="*_str" type="string" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_str_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_str_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_str_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_str_stored" dest="*_str" />
+<copyField source="*_str_stored" dest="*_a" />
+<copyField source="*_str_stored_single" dest="*_str" />
+<copyField source="*_str_stored_single" dest="*" />
+<copyField source="*_str_single" dest="*_str" />
+
+<dynamicField name="*_f" type="string" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_f_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_f_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_f_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_f_stored" dest="*_f" />
+<copyField source="*_f_stored" dest="*_a" />
+<copyField source="*_f_stored_single" dest="*_f" />
+<copyField source="*_f_stored_single" dest="*" />
+<copyField source="*_f_single" dest="*_f" />
+
+<dynamicField name="*_long" type="long" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_long_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_long_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_long_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_long_stored" dest="*_long" />
+<copyField source="*_long_stored" dest="*_a" />
+<copyField source="*_long_stored_single" dest="*_long" />
+<copyField source="*_long_stored_single" dest="*" />
+<copyField source="*_long_single" dest="*_long" />
+
+<dynamicField name="*_dt" type="date" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_dt_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_dt_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_dt_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_dt_stored" dest="*_dt" />
+<copyField source="*_dt_stored" dest="*_a" />
+<copyField source="*_dt_stored_single" dest="*_dt" />
+<copyField source="*_dt_stored_single" dest="*" />
+<copyField source="*_dt_single" dest="*_dt" />
+
+<dynamicField name="*_isbn" type="isbn" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_isbn_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_isbn_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_isbn_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_isbn_stored" dest="*_isbn" />
+<copyField source="*_isbn_stored" dest="*_a" />
+<copyField source="*_isbn_stored_single" dest="*_isbn" />
+<copyField source="*_isbn_stored_single" dest="*" />
+<copyField source="*_isbn_single" dest="*_isbn" />
+
+<dynamicField name="*_lccn" type="lccn" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_lccn_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_lccn_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_lccn_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_lccn_stored" dest="*_lccn" />
+<copyField source="*_lccn_stored" dest="*_a" />
+<copyField source="*_lccn_stored_single" dest="*_lccn" />
+<copyField source="*_lccn_stored_single" dest="*" />
+<copyField source="*_lccn_single" dest="*_lccn" />
+
+<dynamicField name="*_num" type="numericID" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_num_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_num_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_num_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_num_stored" dest="*_num" />
+<copyField source="*_num_stored" dest="*_a" />
+<copyField source="*_num_stored_single" dest="*_num" />
+<copyField source="*_num_stored_single" dest="*" />
+<copyField source="*_num_single" dest="*_num" />
+
+<dynamicField name="*_pp" type="pipe_delimited" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_pp_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_pp_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_pp_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_pp_stored" dest="*_pp" />
+<copyField source="*_pp_stored" dest="*_a" />
+<copyField source="*_pp_stored_single" dest="*_pp" />
+<copyField source="*_pp_stored_single" dest="*" />
+<copyField source="*_pp_single" dest="*_pp" />
+
+<dynamicField name="*_bin" type="binary" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_bin_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_bin_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_bin_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_bin_stored" dest="*_bin" />
+<copyField source="*_bin_stored" dest="*_a" />
+<copyField source="*_bin_stored_single" dest="*_bin" />
+<copyField source="*_bin_stored_single" dest="*" />
+<copyField source="*_bin_single" dest="*_bin" />
+
+<dynamicField name="*_bool" type="boolean" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_bool_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_bool_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_bool_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_bool_stored" dest="*_bool" />
+<copyField source="*_bool_stored" dest="*_a" />
+<copyField source="*_bool_stored_single" dest="*_bool" />
+<copyField source="*_bool_stored_single" dest="*" />
+<copyField source="*_bool_single" dest="*_bool" />
+
+<dynamicField name="*_loc" type="location_rpt" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_loc_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_loc_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_loc_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_loc_stored" dest="*_loc" />
+<copyField source="*_loc_stored" dest="*_a" />
+<copyField source="*_loc_stored_single" dest="*_loc" />
+<copyField source="*_loc_stored_single" dest="*" />
+<copyField source="*_loc_single" dest="*_loc" />
+
+<dynamicField name="*_pt" type="point" indexed="true" stored="false" multiValued="true" />
+<dynamicField name="*_pt_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_pt_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_pt_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_pt_stored" dest="*_pt" />
+<copyField source="*_pt_stored" dest="*_a" />
+<copyField source="*_pt_stored_single" dest="*_pt" />
+<copyField source="*_pt_stored_single" dest="*" />
+<copyField source="*_pt_single" dest="*_pt" />
+
+<dynamicField name="*_tbig" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_tbig_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_tbig" dest="*_t" />
+<copyField source="*_tbig_single" dest="*_t" />
+<copyField source="*_tbig" dest="*_tp" />
+<copyField source="*_tbig_single" dest="*_tp" />
+<dynamicField name="*_tbig_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_tbig_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<copyField source="*_tbig_stored_single" dest="*_t" />
+<copyField source="*_tbig_stored" dest="*_t" />
+<copyField source="*_tbig_stored_single" dest="*_tp" />
+<copyField source="*_tbig_stored" dest="*_tp" />
+<copyField source="*_tbig_stored" dest="*_a" />
+<copyField source="*_tbig_stored_single" dest="*" />
+
+<dynamicField name="*_tf" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_tf_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_tf" dest="*_t" />
+<copyField source="*_tf_single" dest="*_t" />
+<copyField source="*_tf" dest="*_f" />
+<copyField source="*_tf_single" dest="*_f" />
+<dynamicField name="*_tf_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_tf_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<copyField source="*_tf_stored_single" dest="*_t" />
+<copyField source="*_tf_stored" dest="*_t" />
+<copyField source="*_tf_stored_single" dest="*_f" />
+<copyField source="*_tf_stored" dest="*_f" />
+<copyField source="*_tf_stored" dest="*_a" />
+<copyField source="*_tf_stored_single" dest="*" />
+
+<dynamicField name="*_tsearch" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_tsearch_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_tsearch" dest="*_t" />
+<copyField source="*_tsearch_single" dest="*_t" />
+<copyField source="*_tsearch" dest="*_tl" />
+<copyField source="*_tsearch_single" dest="*_tl" />
+<copyField source="*_tsearch" dest="*_tp" />
+<copyField source="*_tsearch_single" dest="*_tp" />
+<dynamicField name="*_tsearch_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_tsearch_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<copyField source="*_tsearch_stored_single" dest="*_t" />
+<copyField source="*_tsearch_stored" dest="*_t" />
+<copyField source="*_tsearch_stored_single" dest="*_tl" />
+<copyField source="*_tsearch_stored" dest="*_tl" />
+<copyField source="*_tsearch_stored_single" dest="*_tp" />
+<copyField source="*_tsearch_stored" dest="*_tp" />
+<copyField source="*_tsearch_stored" dest="*_a" />
+<copyField source="*_tsearch_stored_single" dest="*" />
+
+<dynamicField name="*_tsearchf" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_tsearchf_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_tsearchf" dest="*_t" />
+<copyField source="*_tsearchf_single" dest="*_t" />
+<copyField source="*_tsearchf" dest="*_tl" />
+<copyField source="*_tsearchf_single" dest="*_tl" />
+<copyField source="*_tsearchf" dest="*_tp" />
+<copyField source="*_tsearchf_single" dest="*_tp" />
+<copyField source="*_tsearchf" dest="*_f" />
+<copyField source="*_tsearchf_single" dest="*_f" />
+<dynamicField name="*_tsearchf_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_tsearchf_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<copyField source="*_tsearchf_stored_single" dest="*_t" />
+<copyField source="*_tsearchf_stored" dest="*_t" />
+<copyField source="*_tsearchf_stored_single" dest="*_tl" />
+<copyField source="*_tsearchf_stored" dest="*_tl" />
+<copyField source="*_tsearchf_stored_single" dest="*_tp" />
+<copyField source="*_tsearchf_stored" dest="*_tp" />
+<copyField source="*_tsearchf_stored_single" dest="*_f" />
+<copyField source="*_tsearchf_stored" dest="*_f" />
+<copyField source="*_tsearchf_stored" dest="*_a" />
+<copyField source="*_tsearchf_stored_single" dest="*" />
+
+<dynamicField name="*_ef" type="ignored" indexed="false" stored="false" multiValued="true" />
+<dynamicField name="*_ef_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<copyField source="*_ef" dest="*_e" />
+<copyField source="*_ef_single" dest="*_e" />
+<copyField source="*_ef" dest="*_f" />
+<copyField source="*_ef_single" dest="*_f" />
+<dynamicField name="*_ef_stored_single" type="ignored" indexed="false" stored="false" multiValued="false" />
+<dynamicField name="*_ef_stored" type="ignored" indexed="false" stored="false" multiValued="true" />
+<copyField source="*_ef_stored_single" dest="*_e" />
+<copyField source="*_ef_stored" dest="*_e" />
+<copyField source="*_ef_stored_single" dest="*_f" />
+<copyField source="*_ef_stored" dest="*_f" />
+<copyField source="*_ef_stored" dest="*_a" />
+<copyField source="*_ef_stored_single" dest="*" />
+
+<dynamicField name="*_a" type="string" indexed="false" stored="true" multiValued="true" />
+<dynamicField name="*"   type="string" indexed="false" stored="true" multiValued="false" />
