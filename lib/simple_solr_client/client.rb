@@ -2,9 +2,15 @@ require 'httpclient'
 require 'simple_solr_client/response/generic_response'
 require 'securerandom'
 
-# require 'simple_solr_client/core'
-
 module SimpleSolrClient
+  
+  # Pre-define the client and core to avoid circular references
+  class Client
+  end
+  
+  class Core < Client
+  end
+  
 
   # A Client talks to the Solr instance; use a SimpleSolrClient::Core to talk to a
   # particular core.

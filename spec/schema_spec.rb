@@ -47,65 +47,6 @@ describe "Schema" do
       dfield.matches('test_s_i').must_equal true
       dfield.matches('test_i_s').must_equal false
     end
-
-    it "is found when looking for a match" do
-      dfield  = @schema.dynamic_field('*_i')
-      results = @schema.resulting_fields("year_i")
-      results.size.must_equal 1
-      results.first.type.must_equal dfield.type
-    end
-
-  end
-
-  describe "add/delete field" do
-    it "allows us to add a field" do
-      @schema.add_field SS::Field.new(:name => 'new_field', :type_name => 'string')
-      @schema.write
-      @core.reload
-      @schema.field('new_field').wont_be_nil
-    end
-
-    it "allows us to drop a field" do
-      @schema.add_field SS::Field.new(:name => 'new_field', :type_name => 'string')
-      @schema.write
-      @core.reload
-      @schema.field('new_field').wont_be_nil
-      @schema.drop_field('new_field')
-      @schema.write
-      @schema = @core.reload.schema
-      @schema.fields.map(&:name).wont_include 'new_field'
-    end
-
-
-  end
-
-  describe 'Dynamic Fields' do
-    it "adds a dfield" do
-      @schema.add_dynamic_field SS::DynamicField.new(:name => '*_test_i', :type_name => 'string', :stored => true)
-      @schema.write
-      @schema = @core.reload.schema
-      @schema.dynamic_field('*_test_i').wont_be_nil
-    end
-
-    it "prefers longer dfield names when determining resulting_fields" do
-      @schema.add_dynamic_field SS::DynamicField.new(:name => '*_test_i', :type_name => 'string', :stored => true)
-      @schema.write
-      @schema = @core.reload.schema
-      rf = @schema.resulting_fields('bill_test_i')
-      rf.size.must_equal 1
-      rf.first.type.name.must_equal 'string'
-    end
-
-    it "prefers explicity-defined fields to dynamic fields" do
-      @schema.add_field SS::Field.new(:name=>'explicit_i', :type_name=>'string')
-      @schema.write
-      @schema = @core.reload.schema
-      rf = @schema.resulting_fields('explicit_i')
-      rf.size.must_equal 1
-      rf.first.type.name.must_equal 'string'
-    end
-
-
   end
 
 

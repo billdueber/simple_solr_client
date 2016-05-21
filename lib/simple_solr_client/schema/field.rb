@@ -12,10 +12,6 @@ class SimpleSolrClient::Schema
       @dynamic = false
     end
 
-    def xml_node(doc)
-      Nokogiri::XML::Element.new('field', doc)
-    end
-
     # We can only resolve the actual type in the presence of a
     # particular schema
     def resolve_type(schema)

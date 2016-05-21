@@ -78,17 +78,6 @@ module SimpleSolrClient
       end
 
 
-      # Reverse the process to get XML
-      def to_xml_node(doc = nil)
-        doc ||= Nokogiri::XML::Document.new
-        xml = xml_node(doc)
-        TEXT_ATTR_MAP.merge(BOOL_ATTR_MAP).each_pair do |field, xmlattr|
-          iv = instance_variable_get("@#{field}".to_sym)
-          xml[xmlattr] = iv unless iv.nil?
-        end
-        xml
-      end
-
       # Allow access to methods via [], for easy looping
       def [](k)
         self.send(k.to_sym)

@@ -31,13 +31,5 @@ class SimpleSolrClient::Schema::CopyField
     @source  = s
   end
 
-  def to_xml_node(doc = nil)
-    doc          ||= Nokogiri::XML::Document.new
-    cf           = Nokogiri::XML::Element.new('copyField', doc)
-    cf['source'] = source
-    cf['dest']   = dest
-    cf
-  end
-
 
 end
