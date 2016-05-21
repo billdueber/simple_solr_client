@@ -2,8 +2,6 @@ class SimpleSolrClient::Response::Document
   extend Forwardable
   include Comparable
 
-  attr_accessor :rank
-
   def <=>(other)
     other = other.score if other.respond_to? :score,
                                              self.score <=> other

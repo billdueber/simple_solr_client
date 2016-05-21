@@ -3,7 +3,8 @@ require 'simple_solr_client/schema/matcher'
 class SimpleSolrClient::Schema::CopyField
   include SimpleSolrClient::Schema::Matcher
 
-  attr_accessor :source, :dest
+  attr_accessor :dest
+  attr_reader   :source
 
   def initialize(source, dest)
     self.source   = source

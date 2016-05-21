@@ -19,8 +19,6 @@ Gem::Specification.new do |spec|
 
   # Thread-safe, cross-platform http client
   spec.add_dependency "httpclient"
-
-  # XML parsing. Slower, but less screwy than Nokogiri
   spec.add_dependency 'nokogiri'
 
 
@@ -28,5 +26,4 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "minitest"
-  spec.add_development_dependency 'minitest-reporters'
 end

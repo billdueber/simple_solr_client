@@ -2,6 +2,7 @@
 module SimpleSolrClient
   class Schema
     class Field_or_Type
+      
       attr_accessor :name,
                     :type_name
       attr_writer :indexed,

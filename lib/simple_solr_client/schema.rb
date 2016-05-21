@@ -226,7 +226,7 @@ class SimpleSolrClient::Schema
 
 
   def first_matching_field(str)
-    f = fields.find { |x| x.matches str } or first_matching_dfield(str)
+    fields.find { |x| x.matches str } or first_matching_dfield(str)
   end
 
   def first_matching_dfield(str)

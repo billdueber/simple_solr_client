@@ -5,7 +5,7 @@ class SimpleSolrClient::Response::QueryResponse < SimpleSolrClient::Response::Ge
   extend Forwardable
   include Enumerable
 
-  attr_reader :num_found, :docs, :first_index, :docs, :params, :page
+  attr_reader :num_found, :docs, :first_index, :params, :page
 
   def_delegators :@docs, :each, :count, :size
   def_delegators :@indexed_docs, :[]

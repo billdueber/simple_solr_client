@@ -2,7 +2,7 @@ require 'httpclient'
 require 'simple_solr_client/response/generic_response'
 require 'securerandom'
 
-require 'simple_solr_client/core'
+# require 'simple_solr_client/core'
 
 module SimpleSolrClient
 
@@ -51,7 +51,7 @@ module SimpleSolrClient
     # @param [Hash] args The url arguments
     # @return [Hash] the parsed-out response
     def _get(path, args={})
-      path.sub! /\A\//, ''
+      path.sub!(/\A\//, '')
       args['wt'] = 'json'
       res = JSON.parse(raw_get_content(path, args))
       if res['error']
@@ -94,7 +94,7 @@ module SimpleSolrClient
 
 
     def cores
-      cdata = get('admin/cores', {:force_top_level_url=>true}).status.keys
+      get('admin/cores', {:force_top_level_url=>true}).status.keys
     end
 
 

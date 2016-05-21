@@ -9,12 +9,12 @@ module SimpleSolrClient
   # part of your string or there for legal lucene grouping?
   #
   def self.lucene_escape(str)
-    esc = str.to_s.gsub(ESCAPE_PAT, ESCAPE_MAP)
+    str.to_s.gsub(ESCAPE_PAT, ESCAPE_MAP)
   end
 
 
   # Where is the sample core configuration?
-  SAMPLE_CORE_DIR = File.absolute_path File.join(File.dirname(__FILE__), '..', 'solr_sample_core')
+  SAMPLE_CORE_DIR = File.absolute_path File.join(File.dirname(__FILE__), '..', 'test_core')
 
 end
 
