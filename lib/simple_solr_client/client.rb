@@ -13,10 +13,16 @@ module SimpleSolrClient
 
     attr_reader :base_url, :rawclient
 
-    def initialize(url)
-      @base_url  = url.chomp('/')
+    def initialize(url_or_port)
+      url = if url_or_port.is_a?(Integer)
+              "http://localhost:#{url_or_port}/solr"
+            else
+              url_or_port
+            end
+
+      @base_url   = url.chomp('/')
       @client_url = @base_url
-      @rawclient = HTTPClient.new
+      @rawclient  = HTTPClient.new
     end
 
     # Construct a URL for the given arguments that hit the configured solr
@@ -36,7 +42,7 @@ module SimpleSolrClient
     # You can pass in :force_top_level=>true for those cases wehn
     # you absolutely have to use the client-level url and not a
     # core level URL
-    def raw_get_content(path, args={})
+    def raw_get_content(path, args = {})
       if args.delete(:force_top_level_url)
         u = top_level_url(path)
       else
@@ -50,10 +56,10 @@ module SimpleSolrClient
     # @param [String] path The parts of the URL that comes after the core
     # @param [Hash] args The url arguments
     # @return [Hash] the parsed-out response
-    def _get(path, args={})
+    def _get(path, args = {})
       path.sub! /\A\//, ''
       args['wt'] = 'json'
-      res = JSON.parse(raw_get_content(path, args))
+      res        = JSON.parse(raw_get_content(path, args))
       if res['error']
         raise RuntimeError.new, res['error']
       end
@@ -94,20 +100,20 @@ module SimpleSolrClient
 
 
     def cores
-      cdata = get('admin/cores', {:force_top_level_url=>true}).status.keys
+      cdata = get('admin/cores', {:force_top_level_url => true}).status.keys
     end
 
 
     # Create a new, temporary core
     #noinspection RubyWrongHash
     def new_core(corename)
-      dir      = temp_core_dir_setup(corename)
+      dir = temp_core_dir_setup(corename)
 
       args = {
-          :wt          => 'json',
-          :action      => 'CREATE',
-          :name        => corename,
-          :instanceDir => dir
+        :wt          => 'json',
+        :action      => 'CREATE',
+        :name        => corename,
+        :instanceDir => dir
       }
 
       get('admin/cores', args)

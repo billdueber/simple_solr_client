@@ -12,11 +12,22 @@ class SimpleSolrClient::Schema
       @dynamic = false
     end
 
-    def xml_node(doc)
-      Nokogiri::XML::Element.new('field', doc)
+    # We'll defer to the field type when calling any of the attribute
+    # methods
+    ([TEXT_ATTR_MAP.keys, BOOL_ATTR_MAP.keys].flatten - [:type_name]).each do |x|
+      define_method(x) do
+        rv = super()
+        if rv.nil?
+          self.type[x]
+        else
+          rv
+        end
+      end
     end
 
-    # We can only resolve the actual type in the presence of a
+
+
+        # We can only resolve the actual type in the presence of a
     # particular schema
     def resolve_type(schema)
       self.type = schema.field_type(self.type_name)

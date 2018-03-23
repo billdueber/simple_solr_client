@@ -27,21 +27,6 @@ class SimpleSolrClient::Schema
       nil
     end
 
-    # Create a Nokogiri node out of the currently-set
-    # element attributes (indexed, stored, etc.) and the
-    # XML
-    def xml_node(doc)
-      ft          = Nokogiri::XML::Element.new('fieldType', doc)
-      ft['class'] = self.solr_class
-      xmldoc      = Nokogiri.XML(xml)
-      unless xmldoc.children.empty?
-        xmldoc.children.first.children.each do |c|
-          ft.add_child(c)
-        end
-      end
-
-      ft
-    end
 
     def self.new_from_solr_hash(h)
       ft            = super

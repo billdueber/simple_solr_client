@@ -6,23 +6,16 @@ even if it's bad", here it is.]
 A Solr client specifically designed to try to help you test what the heck
 solr is actually doing.
 
-Most useful when running on the same machine as the solr install, but
-still useful even when you're not.
-
-
 ## Motivation
 
 Solr is complex.
 
 It's complex enough, and fuddles with enough edge cases, that reading
 the documentation and/or the code doesn't get me the understanding
-that I feel I need.
+that I feel I need. So, I turn to testing it as if it were a black box.
 
-If I were smarter, maybe I wouldn't need something like this.
 
-I wanted a way to test what solr is actually doing, and
-this library is a way for me to start to do that in a fashion that's
-more convenient that doing everything "by hand" in the admin dashboard
+Doing everything "by hand" in the admin dashboard
 or running queries via URLs in my browser or using curl.
 
 I wanted a way to figure out what fields (of what types) are being created,
@@ -37,19 +30,17 @@ to the solr administration API and the introspection/analysis it affords.
 
 # Features:
 
-  * Basic add/delete/query
+  * Basic (*very basic) add/delete/query
   * Commit/optimize/clear an index
-  * Reload a core after editing/adjusting a config file
+  * Reload a core (presumably after editing a `schema.xml`)
   * Inspect lists of fields, dynamicFields, copyFields, and
     fieldTypes
-  * Determine which fields (and their properties) would be
+  * Determine (usually) which fields (and their properties) would be
     created when a given field name is indexed, taking into
     account dynamicField and copyField directives.
   * Get list of the tokens that would be created if you
     send a string to a paricular fieldType (like in the
     solr admin analysis page)
-  * Spit a modified schema object back out as xml for
-    saving somewhere if you'd like
 
 Additional features when running against a localhost solr:
   * Spin up a temporary core to play with
@@ -138,33 +129,33 @@ core.delete('name_t:Dueber').commit.number_of_documents #=> 1
 ## The `schema` object
 
 Each core exposes a `schema` object that allows you to find out about
-the fields, copyfields, and field types, and (on localhost) muck
-with the system on the fly.
-
-The schema object is initially created by using the admin api to
-get lists of fields and field types, and the XML for the field types
-is derived by parsing out the schema.xml returned by the api call. Solr
-does *not* expand entities in the returned XML, so if you have `system`
-entities (e.g., you're including stuff off of disk), SimpleSolrClient won't
-get that text and things will likely blow up.
-
+the fields, copyfields, and field types, and how they interact with 
+query and index calls (like the analysis screen in the admin interface)
 
 ```ruby
 
 # Get a list of cores
-client.cores #=> ['core1']
+client.cores #=> ['core1', 'core2']
 core = client.core('core1')
 
 # Get an object representing the schema.xml file
 schema = core.schema #=> SimpleSolrClient::Schema object
 
-# Get lists of field, dynamicFields, copyFields, and fieldTypes
+# Get lists of field, dynamicFields, and copyFields
 # all as SimpleSolrClient::Schema::XXX objects
 
 explicit_fields = schema.fields
 dynamic_fields  = schema.dynamic_fields
 copy_fields     = schema.copy_fields
+
+# Get a list of FieldType object
 field_types     = schema.field_types
+field_type_names = schema.field_types.map(&:name) 
+
+# Check out a specific field type and how it parses stuff 
+mytexttype = schema.field_type('mytexttype') 
+mytexttype.index_tokens('bill dueber solr-stuff') #=> ['bill', 'dueber', 'solr', 'stuff']
+mytexttype.query_tokens('bill dueber solr-stuff') #=> ['bill', 'dueber', 'solr', 'stuff']
 
 ```
 
