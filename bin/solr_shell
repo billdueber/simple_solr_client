@@ -25,6 +25,10 @@ puts "
      Connected to #{client.url}
 
 "
+
+cb.local_variable_set(:solr, client)
+puts "       * Created variable 'solr' for the main solr client"
+
 client.cores.each do |core|
   cb.local_variable_set :"#{core}", client.core(core)
   puts "       * Created variable '#{core}' pointing to its core"
