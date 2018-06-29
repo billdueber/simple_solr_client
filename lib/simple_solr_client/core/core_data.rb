@@ -34,6 +34,10 @@ module SimpleSolrClient::Core::CoreData
     core_data_hash['dataDir']
   end
 
+  def size
+    core_data_hash['index']['size']
+  end
+
   def instance_dir
     core_data_hash['instanceDir']
   end
