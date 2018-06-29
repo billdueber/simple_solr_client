@@ -23,6 +23,8 @@ module SimpleSolrClient
       @base_url   = url.chomp('/')
       @client_url = @base_url
       @rawclient  = HTTPClient.new
+
+      # raise "Can't connect to Solr at #{url}" unless self.up?
     end
 
     # Construct a URL for the given arguments that hit the configured solr
@@ -37,11 +39,29 @@ module SimpleSolrClient
       [@client_url, *args].join('/').chomp('/')
     end
 
+    def ping
+      get('admin/ping')
+    end
 
-    # Call a get on the underlying http client and return the content
-    # You can pass in :force_top_level=>true for those cases wehn
-    # you absolutely have to use the client-level url and not a
+    # Is the server up (and responding to a ping?)
+    # @return [Boolean]
+    def up?
+      begin
+        ping.status == 'OK'
+      rescue
+        false
+      end
+    end
+
+
+
+    # Call a 'get' on the underlying http client and return the content
+    # Will use whatever the URL is for the current context ("client" or
+    # "core"), although you can pass in :force_top_level=>true for those
+    # cases when you absolutely have to use the client-level url and not a
     # core level URL
+    #
+    # Error handling? What error handling???
     def raw_get_content(path, args = {})
       if args.delete(:force_top_level_url)
         u = top_level_url(path)
@@ -95,10 +115,12 @@ module SimpleSolrClient
     # @param [String] corename The name of the core (which must already exist!)
     # @return [SimpleSolrClient::Core]
     def core(corename)
-      SimpleSolrClient::Core.new(@base_url, corename)
+      raise "Core #{corename} not found" unless cores.include? corename.to_s
+      SimpleSolrClient::Core.new(@base_url, corename.to_s)
     end
 
 
+    # Get all the cores
     def cores
       cdata = get('admin/cores', {:force_top_level_url => true}).status.keys
     end
@@ -127,7 +149,7 @@ module SimpleSolrClient
 
     # Set up files for a temp core
     def temp_core_dir_setup(corename)
-      dest = Dir.mktmpdir("simple_solr_#{corename}")
+      dest = Dir.mktmpdir("simple_solr_#{corename}_#{SecureRandom.uuid}")
       src  = SAMPLE_CORE_DIR
       FileUtils.cp_r File.join(src, '.'), dest
       dest

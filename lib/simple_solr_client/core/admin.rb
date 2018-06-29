@@ -1,17 +1,4 @@
 module SimpleSolrClient::Core::Admin
-  def ping
-    get('admin/ping')
-  end
-
-  # Is the server up (and responding to a ping?)
-  # @return [Boolean]
-  def up?
-    begin
-      ping.status == 'OK'
-    rescue
-      false
-    end
-  end
 
   # Send a commit command
   # @return self

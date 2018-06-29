@@ -45,7 +45,6 @@ module SimpleSolrClient::Core::CoreData
   def schema_file
     File.join(instance_dir, 'conf', core_data_hash['schema'])
   end
-
 end
 
 

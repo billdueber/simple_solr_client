@@ -8,14 +8,14 @@ Minitest::Reporters.use! Minitest::Reporters::SpecReporter.new
 require 'singleton'
 
 ENV['TEST_SOLR_URL'] ||= 'http://localhost:8983/solr'
-ENV['TEST_SOLR_CORE'] ||= 'core1'
+ENV['TEST_SOLR_CORE_NAME'] ||= 'core1'
 
 class TestClient
   include Singleton
   attr_reader :client, :core
   def initialize
     @client = SimpleSolrClient::Client.new ENV['TEST_SOLR_URL']
-    @core = @client.core ENV['TEST_SOLR_CORE']
+    @core = @client.core ENV['TEST_SOLR_CORE_NAME'] || 'simple_solr_test'
   end
 end
 
