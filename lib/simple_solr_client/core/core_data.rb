@@ -35,7 +35,15 @@ module SimpleSolrClient::Core::CoreData
   end
 
   def size
-    core_data_hash['index']['size']
+    str = core_data_hash['index']['size']
+    num, unit = str.split(/\s+/).compact.map(&:strip)
+    num = num.to_f
+    case unit
+    when "MB"
+      num * 1
+    when "GB"
+      num * 1000
+    end
   end
 
   def instance_dir
