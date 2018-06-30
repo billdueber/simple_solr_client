@@ -1,4 +1,3 @@
-
 # Figure out how the field type will parse out tokens
 # and change them in the analysis chain. Just calls the
 # provided solr analysis endpoints
@@ -6,6 +5,17 @@
 # To be mixed into FieldType
 
 class SimpleSolrClient::Schema
+
+  class InvalidTokenError < RuntimeError
+    attr_accessor :resp
+
+
+    def initialize(msg, resp)
+      super(msg)
+      @resp = resp
+    end
+  end
+
   module Analysis
 
     #https://lucene.apache.org/solr/4_1_0/solr-core/org/apache/solr/handler/FieldAnalysisRequestHandler.html
@@ -16,6 +26,7 @@ class SimpleSolrClient::Schema
                 'analysis.query'      => val,
       }
       resp   = @core.get(target, h)
+
       ftdata = resp['analysis']['field_types'][name][type]
       rv     = []
       ftdata.last.each do |t|
@@ -29,6 +40,7 @@ class SimpleSolrClient::Schema
       end
       rv
     end
+
 
     private :fieldtype_tokens
 
@@ -46,6 +58,15 @@ class SimpleSolrClient::Schema
     def index_tokens(val)
       fieldtype_tokens(val, 'index')
     end
+
+
+    def index_input_valid?(val)
+      index_tokens(val)
+    rescue SimpleSolrClient::Schema::InvalidTokenError, RuntimeError => e
+      puts "IN HERE"
+      require 'pry'; binding.pry
+    end
+
 
     # Get an array of tokens as analyzed/transformed at query time
     # See #fieldtype_index_tokens
