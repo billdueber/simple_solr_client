@@ -3,6 +3,7 @@ require 'simple_solr_client/response/generic_response'
 require 'securerandom'
 
 require 'simple_solr_client/core'
+require 'simple_solr_client/client/system'
 
 module SimpleSolrClient
 
@@ -41,6 +42,21 @@ module SimpleSolrClient
 
     def ping
       get('admin/ping')
+    end
+
+    # Get info about the solr system itself
+    def system
+      @system ||= SimpleSolrClient::System.new(get('admin/info/system'))
+    end
+
+    # @return [String] The solr semver version
+    def version
+      system.solr_semver_version
+    end
+
+    # @return [Integer] the solr major version
+    def major_version
+      system.solr_major_version
     end
 
     # Is the server up (and responding to a ping?)
