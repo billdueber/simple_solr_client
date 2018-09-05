@@ -20,14 +20,18 @@ Gem::Specification.new do |spec|
   # Thread-safe, cross-platform http client
   spec.add_dependency "httpclient"
 
-  # XML parsing. Slower, but less screwy than Nokogiri
+  # XML parsing. Even if you use JSON, needed for parsing out
+  # the schema and stuff for instrospection.
+  #
+  # Should probably pull that functionality into a plugin
   spec.add_dependency 'nokogiri'
 
-
-
+  # For the solr_shell script
+  spec.add_dependency 'pry'
+  
   spec.add_development_dependency "bundler", "~> 1.7"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency "minitest"
   spec.add_development_dependency 'minitest-reporters'
-  spec.add_dependency 'pry'
+
 end
