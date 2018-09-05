@@ -1,10 +1,8 @@
 # Pre-define the inheritance so Ruby doesn't complain
 # on import.
-require 'simple_solr_client/client'
-require 'simple_solr_client/schema'
 module SimpleSolrClient
-  class Core < Client
-  end
+  class Client; end
+  class Core < Client; end
 end
 
 
@@ -44,10 +42,6 @@ class SimpleSolrClient::Core
   # Send JSON to this core's update/json handler
   def update(object_to_post, response_type = nil)
     post_json('update/json', object_to_post, response_type)
-  end
-
-  def schema
-    @schema ||= SimpleSolrClient::Schema.new(self)
   end
 
 end

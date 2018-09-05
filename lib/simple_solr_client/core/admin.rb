@@ -19,7 +19,6 @@ module SimpleSolrClient::Core::Admin
   # @return self
   def reload
     get('admin/cores', {:force_top_level_url => true, :core => core, :action => 'RELOAD'})
-    @schema = nil
     self
   end
 

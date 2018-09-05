@@ -134,9 +134,6 @@ ft.stored #=> true
 ft.indexed #=> true
 # etc.
 
-newft = SimpleSolrClient::Schema::FieldType.new_from_xml(xmlstring)
-schema.add_field_type(newft)
-
 ft.name #=> text
 ft.query_tokens "Don't forget me when I'm getting H20"
   #=> ["don't", "forget", "me", "when", "i'm", ["getting", "get"], "h20"]
