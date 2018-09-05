@@ -3,7 +3,6 @@ require 'simple_solr_client/response/generic_response'
 require 'securerandom'
 
 require 'simple_solr_client/client/system'
-require 'simple_solr_client/core'
 
 module SimpleSolrClient
 

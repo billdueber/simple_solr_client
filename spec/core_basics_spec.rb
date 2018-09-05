@@ -1,6 +1,6 @@
 require 'minitest_helper'
 
-describe SimpleSolrClient::Client do
+describe SimpleSolrClient::Core do
 
   before do
     @core = TempCore.instance.core('core_basics')
