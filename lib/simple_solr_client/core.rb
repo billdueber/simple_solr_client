@@ -1,7 +1,6 @@
 # Pre-define the inheritance so Ruby doesn't complain
 # on import.
 require 'simple_solr_client/client'
-require 'simple_solr_client/schema'
 module SimpleSolrClient
   class Core < Client
   end

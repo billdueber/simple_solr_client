@@ -1,3 +1,15 @@
+# Ugh. Need to turn off warnings for httpclient
+oldverbose = $VERBOSE
+$VERBOSE = nil
+require 'httpclient'
+$VERBOSE = oldverbose
+
+require 'forwardable'
+require 'json'
+
+require "simple_solr_client/version"
+
+
 module SimpleSolrClient
 
   ESCAPE_CHARS = '+-&|!(){}[]^"~*?:\\'
@@ -12,17 +24,10 @@ module SimpleSolrClient
     esc = str.to_s.gsub(ESCAPE_PAT, ESCAPE_MAP)
   end
 
-
   # Where is the sample core configuration?
   SAMPLE_CORE_DIR = File.absolute_path File.join(File.dirname(__FILE__), '..', 'solr_sample_core')
 
 end
-
-require 'httpclient'
-require 'forwardable'
-require 'json'
-
-require "simple_solr_client/version"
 
 # Need to load core before client because of inter-dependencies resulting
 # in 'require' recursion
