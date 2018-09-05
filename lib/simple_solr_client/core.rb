@@ -25,7 +25,12 @@ class SimpleSolrClient::Core
   attr_reader :core
   alias_method :name, :core
 
-  def initialize(url, core)
+  def initialize(url, core=nil)
+    if core.nil?
+      components = url.gsub(%r[/\Z], '').split('/')
+      core = components.last
+      url = components[0..-2].join('/')
+    end
     super(url)
     @core = core
   end

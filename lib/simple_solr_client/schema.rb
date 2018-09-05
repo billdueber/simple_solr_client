@@ -10,8 +10,6 @@ class SimpleSolrClient::Schema
   # A simplistic representation of a schema
 
 
-  attr_reader :xmldoc
-
   def initialize(core)
     @core           = core
     @fields         = {}
@@ -103,11 +101,7 @@ class SimpleSolrClient::Schema
 
 
   # For loading, we get the information about the fields via the API,
-  # but grab an XML document for modifying/writing
   def load
-    @xmldoc = Nokogiri.XML(@core.raw_get_content('admin/file', {:file => 'schema.xml'})) do |config|
-      config.noent
-    end
     load_explicit_fields
     load_dynamic_fields
     load_copy_fields
@@ -144,45 +138,7 @@ class SimpleSolrClient::Schema
     @field_types = {}
     @core.get('schema/fieldtypes')['fieldTypes'].each do |fthash|
       ft        = FieldType.new_from_solr_hash(fthash)
-      type_name = ft.name
-      attr      = "[@name=\"#{type_name}\"]"
-      node      = @xmldoc.css("fieldType#{attr}").first || @xmldoc.css("fieldtype#{attr}").first
-      unless node
-        puts "Failed for type #{type_name}"
-      end
-      ft.xml    = node.to_xml
       add_field_type(ft)
-    end
-  end
-
-  def clean_schema_xml
-    d = @xmldoc.dup
-    d.xpath('//comment()').remove
-    d.css('field').remove
-    d.css('fieldType').remove
-    d.css('fieldtype').remove
-    d.css('dynamicField').remove
-    d.css('copyField').remove
-    d.css('dynamicfield').remove
-    d.css('copyfield').remove
-    d.css('schema').children.find_all { |x| x.name == 'text' }.each { |x| x.remove }
-    d
-  end
-
-  def to_xml
-    # Get a clean schema XML document
-    d = clean_schema_xml
-    s = d.css('schema').first
-    [fields, dynamic_fields, copy_fields, field_types].flatten.each do |f|
-      s.add_child f.to_xml_node
-    end
-    d.to_xml
-  end
-
-
-  def write
-    File.open(@core.schema_file, 'w:utf-8') do |out|
-      out.puts self.to_xml
     end
   end
 

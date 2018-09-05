@@ -18,20 +18,36 @@ module SimpleSolrClient::Core::CoreData
     core_data_hash['index']
   end
 
-  def default?
-    core_data_hash['isDefaultCore']
-  end
-
+  # Time of last modification
   def last_modified
     Time.parse index['lastModified']
   end
 
+  # Total documents
   def number_of_documents
     index['numDocs']
   end
 
+  alias_method :numDocs, :number_of_documents
+  alias_method :num_docs, :number_of_documents
+
+  # The (local to the server) data directory
   def data_dir
     core_data_hash['dataDir']
+  end
+
+
+  # Get the index size in megabytes
+  def size
+    str = index['size']
+    num, unit = str.split(/\s+/).compact.map(&:strip)
+    num = num.to_f
+    case unit
+    when "MB"
+      num * 1
+    when "GB"
+      num * 1000
+    end
   end
 
   def instance_dir
@@ -45,7 +61,6 @@ module SimpleSolrClient::Core::CoreData
   def schema_file
     File.join(instance_dir, 'conf', core_data_hash['schema'])
   end
-
 end
 
 
