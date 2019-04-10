@@ -1,3 +1,4 @@
+
 module SimpleSolrClient::Core::Admin
 
   # Send a commit command

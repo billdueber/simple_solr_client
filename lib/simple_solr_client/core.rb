@@ -1,3 +1,5 @@
+require 'simple_solr_client/schema'
+
 # Pre-define the inheritance so Ruby doesn't complain
 # on import.
 module SimpleSolrClient
@@ -20,8 +22,9 @@ class SimpleSolrClient::Core
   include SimpleSolrClient::Core::Search
 
 
-  attr_reader :core
+  attr_reader :core, :schema
   alias_method :name, :core
+
 
   def initialize(url, core=nil)
     if core.nil?
@@ -31,6 +34,7 @@ class SimpleSolrClient::Core
     end
     super(url)
     @core = core
+    @schema = SimpleSolrClient::Schema.new(self)
   end
 
 
