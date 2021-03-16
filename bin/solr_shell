@@ -14,11 +14,11 @@ require 'pry'
 
 solr_url_or_port = ARGV[0]
 
-solr_url = if solr_url_or_port =~ /\A\d+/Z/
+solr_url = if solr_url_or_port =~ /\A\d+\Z/
              "http://localhost:#{solr_url_or_port}/solr"
            else
               solr_url_or_port
-           fi
+           end
 
   
 
